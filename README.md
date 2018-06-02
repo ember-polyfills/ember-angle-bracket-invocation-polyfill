@@ -4,6 +4,8 @@ ember-angle-bracket-invocation-polyfill
 This addon provides a polyfill for angle bracket invocation syntax as described in
 [RFC 311](https://github.com/emberjs/rfcs/pull/311).
 
+[![Build Status](https://travis-ci.org/rwjblue/ember-angle-bracket-invocation-polyfill.svg?branch=master)](https://travis-ci.org/rwjblue/ember-angle-bracket-invocation-polyfill)
+
 Installation
 ------------------------------------------------------------------------------
 
