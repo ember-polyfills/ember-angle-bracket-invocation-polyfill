@@ -3,6 +3,9 @@ import { setupRenderingTest } from 'ember-qunit';
 import { render } from '@ember/test-helpers';
 import hbs from 'htmlbars-inline-precompile';
 
+import Service, { inject as injectService } from '@ember/service';
+import Component from '@ember/component';
+
 module('Integration | Component | angle-bracket-invocation', function(hooks) {
   setupRenderingTest(hooks);
 
@@ -31,7 +34,7 @@ module('Integration | Component | angle-bracket-invocation', function(hooks) {
     assert.dom('h2').hasText("rwjblue's component");
   });
 
-  test('invoke dynamic path', async function(assert) {
+  test('invoke dynamic - local', async function(assert) {
     this.owner.register('template:components/foo-bar', hbs`hi rwjblue!`);
 
     await render(hbs`
@@ -40,6 +43,26 @@ module('Integration | Component | angle-bracket-invocation', function(hooks) {
       {{/with}}
     `);
  
-    assert.dom('h2').hasText("rwjblue's component");
+    assert.dom().hasText("hi rwjblue!");
+  });
+
+  test('invoke dynamic - path', async function(assert) {
+    this.owner.register('service:elsewhere', Service.extend());
+    this.owner.register('component:x-invoker', Component.extend({
+      elsewhere: injectService(),
+
+      init() {
+        this._super(...arguments);
+
+        let elsewhere = this.get('elsewhere');
+        elsewhere.set('curriedThing', this.curriedThing);
+      }
+    }));
+    this.owner.register('template:components/x-invoker', hbs`<elsewhere.curriedThing />`);
+    this.owner.register('template:components/foo-bar', hbs`hi rwjblue!`);
+
+    await render(hbs`{{x-invoker curriedThing=(component 'foo-bar')}}`);
+
+    assert.dom().hasText("hi rwjblue!");
   });
 });
