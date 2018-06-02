@@ -34,6 +34,14 @@ module('Integration | Component | angle-bracket-invocation', function (hooks) {
 
       assert.dom('h2').hasText("rwjblue's component");
     });
+
+    test('with single attribute', async function(assert) {
+      this.owner.register('template:components/foo-bar', hbs``);
+
+      await render(hbs`<FooBar data-foo="bar" />`);
+
+      assert.dom('[data-foo="bar"]').exists();
+    });
   });
 
   module('dynamic component support', function() {
@@ -47,6 +55,18 @@ module('Integration | Component | angle-bracket-invocation', function (hooks) {
       `);
 
       assert.dom().hasText("hi rwjblue!");
+    });
+
+    test('local with single attribute', async function(assert) {
+      this.owner.register('template:components/foo-bar', hbs``);
+
+      await render(hbs`
+        {{#with (component 'foo-bar') as |LolBar|}}
+          <LolBar data-foo="bar" />
+        {{/with}}
+      `);
+
+      assert.dom('[data-foo="bar"]').exists();
     });
 
     test('invoke dynamic - path', async function (assert) {
