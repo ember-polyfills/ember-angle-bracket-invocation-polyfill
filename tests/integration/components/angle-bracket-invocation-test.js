@@ -26,21 +26,38 @@ module('Integration | Component | angle-bracket-invocation', function (hooks) {
       assert.dom().hasText('hi rwjblue!');
     });
 
-    test('with single argument', async function (assert) {
+    test('with arguments', async function (assert) {
       this.owner.register('template:components/foo-bar', hbs`<h2>{{title}}</h2>`);
 
       this.set('title', "rwjblue's component");
       await render(hbs`<FooBar @title={{title}} />`);
 
       assert.dom('h2').hasText("rwjblue's component");
+
+      this.set('title', "mmun's component");
+      assert.dom('h2').hasText("mmun's component");
+
+      this.set('title', "rwjblue's component");
+      assert.dom('h2').hasText("rwjblue's component");
     });
 
-    test('with single attribute', async function(assert) {
+    test('with attributes', async function(assert) {
       this.owner.register('template:components/foo-bar', hbs``);
 
       await render(hbs`<FooBar data-foo="bar" />`);
 
       assert.dom('[data-foo="bar"]').exists();
+    });
+
+    test('attributes, arguments, and block', async function(assert) {
+      this.owner.register('template:components/foo-bar', hbs`<h2>{{title}}</h2><p>{{yield}}</p>`);
+
+      this.set('title', "rwjblue's component");
+      await render(hbs`<FooBar data-foo="bar" @title={{title}}>Contents</FooBar>`);
+
+      assert.dom('[data-foo="bar"]').exists();
+      assert.dom('h2').hasText("rwjblue's component");
+      assert.dom('p').hasText('Contents');
     });
   });
 
