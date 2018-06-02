@@ -28,8 +28,28 @@ module('Integration | Component | angle-bracket-invocation', function(hooks) {
       assert.dom().hasText('No');
     });
 
-    test('not self-closing', async function(assert) {
+    test('with block', async function(assert) {
       await render(hbs`<FooBar>Stuff</FooBar>`);
+
+      assert.dom().hasText('Yes');
+    });
+
+    test('invoking dynamically - self-closing', async function(assert) {
+      await render(hbs`
+        {{#with (component 'foo-bar') as |LolBar|}}
+          <LolBar />
+        {{/with}}
+      `);
+
+      assert.dom().hasText('No');
+    });
+
+    test('invoking dynamically - with block', async function(assert) {
+      await render(hbs`
+        {{#with (component 'foo-bar') as |LolBar|}}
+          <LolBar></LolBar>
+        {{/with}}
+      `);
 
       assert.dom().hasText('Yes');
     });
