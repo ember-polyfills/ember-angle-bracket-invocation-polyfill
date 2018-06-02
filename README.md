@@ -2,7 +2,7 @@ ember-angle-bracket-invocation-polyfill
 ==============================================================================
 
 This addon provides a polyfill for angle bracket invocation syntax as described in
-[RFC 311](https://github.com/emberjs/rfcs/pull/311). 
+[RFC 311](https://github.com/emberjs/rfcs/pull/311).
 
 Installation
 ------------------------------------------------------------------------------
@@ -15,7 +15,7 @@ ember install ember-angle-bracket-invocation-polyfill
 Usage
 ------------------------------------------------------------------------------
 
-Simply invoke 
+Simply invoke
 
 
 Limitations
@@ -25,7 +25,7 @@ Not all features described in the RFC are polyfilled.
 This addon does not support the follow features:
 
 - Single word component names
-- Splatting attributes with `...attributes`.
+- Explicitly splatting attributes with `...attributes`.
 
 
 Contributing

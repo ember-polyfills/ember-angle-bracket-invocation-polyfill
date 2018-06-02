@@ -1,8 +1,8 @@
 - docs:
   - feature: link to rfc, brief explanation, usage examples
   - limitations:
-    - no support for ...attributes at all currently   
-    - must still have two words 
+    - no support for explicit ...attributes at all
+    - must still have two words
     - self closing detection is dependent on ember 3.1+
 
 - tests:
@@ -33,4 +33,5 @@ impl:
   - if 1), then replace with {{component}}
   - if 2), then replace with {{camel-case-name}}
   - make sure that has-block is correct for `<FooBar />` in both cases
+  - noop when on Ember 3.4+
 
