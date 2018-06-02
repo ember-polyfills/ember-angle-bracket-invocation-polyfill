@@ -35,7 +35,7 @@ module('Integration | Component | angle-bracket-invocation', function(hooks) {
     this.owner.register('template:components/foo-bar', hbs`hi rwjblue!`);
 
     await render(hbs`
-      {{#with (component 'foo-bar') as |LolBar}}
+      {{#with (component 'foo-bar') as |LolBar|}}
         <LolBar />
       {{/with}}
     `);
