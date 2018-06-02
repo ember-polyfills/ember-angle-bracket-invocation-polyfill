@@ -26,6 +26,14 @@ module('Integration | Component | angle-bracket-invocation', function (hooks) {
       assert.dom().hasText('hi rwjblue!');
     });
 
+    test('yielding block param', async function (assert) {
+      this.owner.register('template:components/foo-bar', hbs`{{yield 'hi'}}`);
+
+      await render(hbs`<FooBar as |salutation|>{{salutation}} rwjblue!</FooBar>`);
+
+      assert.dom().hasText('hi rwjblue!');
+    });
+
     test('with arguments', async function (assert) {
       this.owner.register('template:components/foo-bar', hbs`<h2>{{title}}</h2>`);
 
@@ -62,12 +70,36 @@ module('Integration | Component | angle-bracket-invocation', function (hooks) {
   });
 
   module('dynamic component support', function() {
-    test('invoke dynamic - local', async function (assert) {
+    test('invoke dynamic - local, self-closing', async function (assert) {
       this.owner.register('template:components/foo-bar', hbs`hi rwjblue!`);
 
       await render(hbs`
         {{#with (component 'foo-bar') as |LolBar|}}
           <LolBar />
+        {{/with}}
+      `);
+
+      assert.dom().hasText("hi rwjblue!");
+    });
+
+    test('invoke dynamic - local, block', async function (assert) {
+      this.owner.register('template:components/foo-bar', hbs`{{yield}}!`);
+
+      await render(hbs`
+        {{#with (component 'foo-bar') as |LolBar|}}
+          <LolBar>hi rwjblue</LolBar>
+        {{/with}}
+      `);
+
+      assert.dom().hasText("hi rwjblue!");
+    });
+
+    test('invoke dynamic - local, block, block param', async function (assert) {
+      this.owner.register('template:components/foo-bar', hbs`{{yield 'hi'}}!`);
+
+      await render(hbs`
+        {{#with (component 'foo-bar') as |LolBar|}}
+          <LolBar as |salutation|>{{salutation}} rwjblue</LolBar>
         {{/with}}
       `);
 
