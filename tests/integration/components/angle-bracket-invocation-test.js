@@ -13,15 +13,33 @@ module('Integration | Component | angle-bracket-invocation', function(hooks) {
     this.owner.register('template:components/foo-bar', hbs`hi martin!`);
 
     await render(hbs`<FooBar />`);
- 
+
     assert.dom().hasText('hi martin!');
+  });
+
+  module('has-block', function(hooks) {
+    hooks.beforeEach(function() {
+      this.owner.register('template:components/foo-bar', hbs`{{#if hasBlock}}Yes{{else}}No{{/if}}`);
+    });
+
+    test('when self-closing', async function(assert) {
+      await render(hbs`<FooBar />`);
+
+      assert.dom().hasText('No');
+    });
+
+    test('not self-closing', async function(assert) {
+      await render(hbs`<FooBar>Stuff</FooBar>`);
+
+      assert.dom().hasText('Yes');
+    });
   });
 
   test('invoke with block', async function(assert) {
     this.owner.register('template:components/foo-bar', hbs`{{yield}}`);
 
     await render(hbs`<FooBar>hi rwjblue!</FooBar>`);
- 
+
     assert.dom().hasText('hi rwjblue!');
   });
 
@@ -30,7 +48,7 @@ module('Integration | Component | angle-bracket-invocation', function(hooks) {
 
     this.set('title', "rwjblue's component");
     await render(hbs`<FooBar @title={{title}} />`);
- 
+
     assert.dom('h2').hasText("rwjblue's component");
   });
 
@@ -42,7 +60,7 @@ module('Integration | Component | angle-bracket-invocation', function(hooks) {
         <LolBar />
       {{/with}}
     `);
- 
+
     assert.dom().hasText("hi rwjblue!");
   });
 
