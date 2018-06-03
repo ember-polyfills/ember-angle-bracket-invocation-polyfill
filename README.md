@@ -1,5 +1,4 @@
-ember-angle-bracket-invocation-polyfill
-==============================================================================
+# ember-angle-bracket-invocation-polyfill
 
 This addon provides a polyfill for angle bracket invocation syntax as described in
 [RFC 311](https://github.com/emberjs/rfcs/pull/311). It's the same components you
@@ -7,15 +6,13 @@ know and love, no longer surrounded by mustaches. \o/
 
 [![Build Status](https://travis-ci.org/rwjblue/ember-angle-bracket-invocation-polyfill.svg?branch=master)](https://travis-ci.org/rwjblue/ember-angle-bracket-invocation-polyfill)
 
-Installation
-------------------------------------------------------------------------------
+## Installation
 
 ```
 ember install ember-angle-bracket-invocation-polyfill
 ```
 
-Usage
-------------------------------------------------------------------------------
+## Usage
 
 The best usage guide is [the RFC itself](https://github.com/emberjs/rfcs/blob/master/text/0311-angle-bracket-invocation.md),
 but here are a few examples of "before"/"after" to whet your appetite:
@@ -30,7 +27,6 @@ but here are a few examples of "before"/"after" to whet your appetite:
     {{#s.option value=country}}{{country.name}}{{/s.option}}
   {{/each}}
 {{/super-select}}
-
 ```
 
 **After**:
@@ -47,25 +43,25 @@ but here are a few examples of "before"/"after" to whet your appetite:
 
 ### Supported Features
 
-* Supports invoking components via angle brackets using TitleCase
+- Supports invoking components via angle brackets using TitleCase
 
 ```hbs
 <FooBar></FooBar>
 ```
 
-* Supports invoking components via angle brackets with self-closing syntax
+- Supports invoking components via angle brackets with self-closing syntax
 
 ```hbs
 <FooBar />
 ```
 
-* Supports invoking components via angle brackets using paths
+- Supports invoking components via angle brackets using paths
 
 ```hbs
 <some.thing></some.thing>
 ```
 
-* Supports invoking components via angle brackets using yielded block params
+- Supports invoking components via angle brackets using yielded block params
 
 ```hbs
 {{#with (component 'foo-bar') as |Foo|}}
@@ -73,19 +69,19 @@ but here are a few examples of "before"/"after" to whet your appetite:
 {{/with}}
 ```
 
-* Supports passing arguments into invoked components with `@` prefix
+- Supports passing arguments into invoked components with `@` prefix
 
 ```hbs
 <FooBar @title={{whateverHere}}></FooBar>
 ```
 
-* Supports passing attributes to be added to the root element of the component without `@` prefix
+- Supports passing attributes to be added to the root element of the component without `@` prefix
 
 ```hbs
 <FooBar data-test-foo-bar></FooBar>
 ```
 
-* Supports using `has-block` _inside_ the invoked component to determine if a block was provided
+- Supports using `has-block` _inside_ the invoked component to determine if a block was provided
 
 ```hbs
 <FooBar /> {{! checking `has-block` inside would be `false`}}
@@ -93,19 +89,17 @@ but here are a few examples of "before"/"after" to whet your appetite:
 <FooBar></FooBar> {{! checking `has-block` inside would be `true`}}
 ```
 
-* Supports yielding block params from inside the invoked component
+- Supports yielding block params from inside the invoked component
 
 ```hbs
 <FooBar as |qux|>{{qux}}</FooBar>
 ```
 
-* Completely innert when running Ember 3.4 or higher
-* Supports Ember 2.12, 2.16, 2.18, 3.2, 3.3
-* Test all the features listed above 😘
+- Completely innert when running Ember 3.4 or higher
+- Supports Ember 2.12, 2.16, 2.18, 3.2, 3.3
+- Test all the features listed above 😘
 
-
-Limitations
-------------------------------------------------------------------------------
+## Limitations
 
 Not all features described in the RFC are polyfilled.
 This addon does not support the following features:
@@ -113,35 +107,32 @@ This addon does not support the following features:
 - Single word component names
 - Explicitly splatting attributes with `...attributes`.
 
-
-Contributing
-------------------------------------------------------------------------------
+## Contributing
 
 ### Installation
 
-* `git clone <repository-url>`
-* `cd ember-angle-bracket-invocation-polyfill`
-* `yarn install`
+- `git clone <repository-url>`
+- `cd ember-angle-bracket-invocation-polyfill`
+- `yarn install`
 
 ### Linting
 
-* `yarn lint:js`
-* `yarn lint:js --fix`
+- `yarn lint:js`
+- `yarn lint:js --fix`
 
 ### Running tests
 
-* `ember test` – Runs the test suite on the current Ember version
-* `ember test --server` – Runs the test suite in "watch mode"
-* `ember try:each` – Runs the test suite against multiple Ember versions
+- `ember test` – Runs the test suite on the current Ember version
+- `ember test --server` – Runs the test suite in "watch mode"
+- `ember try:each` – Runs the test suite against multiple Ember versions
 
 ### Running the dummy application
 
-* `ember serve`
-* Visit the dummy application at [http://localhost:4200](http://localhost:4200).
+- `ember serve`
+- Visit the dummy application at [http://localhost:4200](http://localhost:4200).
 
 For more information on using ember-cli, visit [https://ember-cli.com/](https://ember-cli.com/).
 
-License
-------------------------------------------------------------------------------
+## License
 
 This project is licensed under the [MIT License](LICENSE.md).
