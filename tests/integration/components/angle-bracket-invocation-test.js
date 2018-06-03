@@ -237,5 +237,28 @@ module('Integration | Component | angle-bracket-invocation', function(hooks) {
 
       assert.dom('[data-one="from render"][data-two="from outer"]').hasText('hi martin!');
     });
+
+    test('passing into element - normal component', async function(assert) {
+      this.owner.register(
+        'template:components/foo-bar',
+        hbs`<span ...attributes>hi martin!</span>`
+      );
+
+      await render(hbs`<FooBar data-test-my-thing />`);
+
+      assert.dom('span[data-test-my-thing]').hasText('hi martin!');
+    });
+
+    test('passing into element - tagless component', async function(assert) {
+      this.owner.register(
+        'template:components/foo-bar',
+        hbs`<span ...attributes>hi martin!</span>`
+      );
+      this.owner.register('component:foo-bar', Component.extend({ tagName: '' }));
+
+      await render(hbs`<FooBar data-test-my-thing />`);
+
+      assert.dom('span[data-test-my-thing]').hasText('hi martin!');
+    });
   });
 });
