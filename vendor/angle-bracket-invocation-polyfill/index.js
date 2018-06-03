@@ -6,7 +6,7 @@
     const { Component, computed } = Ember;
 
     Component.reopen({
-      __HTML_ATTRIBUTES__: computed({
+      __ANGLE_ATTRS__: computed({
         set(key, value) {
           let attributes = Object.keys(value);
           let attributeBindingsOverride = [];
@@ -14,7 +14,7 @@
           for (let i = 0; i < attributes.length; i++) {
             let attribute = attributes[i];
 
-            attributeBindingsOverride.push(`__HTML_ATTRIBUTES__.${attribute}:${attribute}`);
+            attributeBindingsOverride.push(`__ANGLE_ATTRS__.${attribute}:${attribute}`);
           }
 
           if (this.attributeBindings) {
