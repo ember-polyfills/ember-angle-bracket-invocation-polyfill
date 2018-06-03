@@ -95,6 +95,12 @@ but here are a few examples of "before"/"after" to whet your appetite:
 <FooBar as |qux|>{{qux}}</FooBar>
 ```
 
+- Supports passing `...attributes` into another angle bracket invocation
+
+```hbs
+<FooBar ...attributes>
+```
+
 - Completely innert when running Ember 3.4 or higher
 - Supports Ember 2.12, 2.16, 2.18, 3.2, 3.3
 - Test all the features listed above 😘
