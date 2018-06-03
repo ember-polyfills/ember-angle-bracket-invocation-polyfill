@@ -44,6 +44,8 @@ module.exports = {
     let babelAddon = this.addons.find(addon => addon.name === 'ember-cli-babel');
 
     let transpiledVendorTree = babelAddon.transpileTree(rawVendorTree, {
+      babel: this.options.babel,
+
       'ember-cli-babel': {
         compileModules: false,
       },
