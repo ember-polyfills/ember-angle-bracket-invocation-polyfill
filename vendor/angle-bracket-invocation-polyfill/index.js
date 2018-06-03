@@ -8,7 +8,10 @@
   Component.reopen({
     __ANGLE_ATTRS__: computed({
       set(key, value) {
-        let attributes = Object.keys(value);
+        let { invocationAttributes, attrSplat } = value;
+
+        let combinedAttributes = Ember.assign({}, invocationAttributes, attrSplat);
+        let attributes = Object.keys(combinedAttributes);
         let attributeBindingsOverride = [];
 
         for (let i = 0; i < attributes.length; i++) {
@@ -31,7 +34,7 @@
           this.attributeBindings = attributeBindingsOverride;
         }
 
-        return value;
+        return combinedAttributes;
       },
     }),
   });
