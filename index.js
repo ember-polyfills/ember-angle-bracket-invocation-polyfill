@@ -21,7 +21,7 @@ module.exports = {
         plugin: require('./lib/angle-bracket-invocation-polyfill'),
         baseDir() {
           return __dirname;
-        }
+        },
       });
     }
   },
@@ -29,20 +29,24 @@ module.exports = {
   included() {
     this._super.included.apply(this, arguments);
 
-    if (!this.shouldPolyfill) { return; }
+    if (!this.shouldPolyfill) {
+      return;
+    }
 
-    this.import("vendor/angle-bracket-invocation-polyfill/index.js");
+    this.import('vendor/angle-bracket-invocation-polyfill/index.js');
   },
 
   treeForVendor(rawVendorTree) {
-    if (!this.shouldPolyfill) { return; }
+    if (!this.shouldPolyfill) {
+      return;
+    }
 
-    let babelAddon = this.addons.find(addon => addon.name === "ember-cli-babel");
+    let babelAddon = this.addons.find(addon => addon.name === 'ember-cli-babel');
 
     let transpiledVendorTree = babelAddon.transpileTree(rawVendorTree, {
-      "ember-cli-babel": {
-        compileModules: false
-      }
+      'ember-cli-babel': {
+        compileModules: false,
+      },
     });
 
     return transpiledVendorTree;
