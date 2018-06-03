@@ -20,7 +20,7 @@ Usage
 The best usage guide is [the RFC itself](https://github.com/emberjs/rfcs/blob/master/text/0311-angle-bracket-invocation.md),
 but here are a few examples of "before"/"after" to whet your appetite:
 
-### Before:
+**Before**:
 
 ```hbs
 {{site-header user=this.user class=(if this.user.isAdmin "admin")}}
@@ -33,7 +33,7 @@ but here are a few examples of "before"/"after" to whet your appetite:
 
 ```
 
-### After:
+**After**:
 
 ```hbs
 <SiteHeader @user={{this.user}} class={{if this.user.isAdmin "admin"}} />
@@ -44,6 +44,65 @@ but here are a few examples of "before"/"after" to whet your appetite:
   {{/each}}
 </SuperSelect>
 ```
+
+### Supported Features
+
+* Supports invoking components via angle brackets using TitleCase
+
+```hbs
+<FooBar></FooBar>
+```
+
+* Supports invoking components via angle brackets with self-closing syntax
+
+```hbs
+<FooBar />
+```
+
+* Supports invoking components via angle brackets using paths
+
+```hbs
+<some.thing></some.thing>
+```
+
+* Supports invoking components via angle brackets using yielded block params
+
+```hbs
+{{#with (component 'foo-bar') as |Foo|}}
+  <Foo></Foo>
+{{/with}}
+```
+
+* Supports passing arguments into invoked components with `@` prefix
+
+```hbs
+<FooBar @title={{whateverHere}}></FooBar>
+```
+
+* Supports passing attributes to be added to the root element of the component without `@` prefix
+
+```hbs
+<FooBar data-test-foo-bar></FooBar>
+```
+
+* Supports using `has-block` _inside_ the invoked component to determine if a block was provided
+
+```hbs
+<FooBar /> {{! checking `has-block` inside would be `false`}}
+
+<FooBar></FooBar> {{! checking `has-block` inside would be `true`}}
+```
+
+* Supports yielding block params from inside the invoked component
+
+```hbs
+<FooBar as |qux|>{{qux}}</FooBar>
+```
+
+* Completely innert when running Ember 3.4 or higher
+* Supports Ember 2.12, 2.16, 2.18, 3.2, 3.3
+* Test all the features listed above 😘
+
 
 Limitations
 ------------------------------------------------------------------------------
