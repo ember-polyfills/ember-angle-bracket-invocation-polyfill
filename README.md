@@ -2,7 +2,8 @@ ember-angle-bracket-invocation-polyfill
 ==============================================================================
 
 This addon provides a polyfill for angle bracket invocation syntax as described in
-[RFC 311](https://github.com/emberjs/rfcs/pull/311).
+[RFC 311](https://github.com/emberjs/rfcs/pull/311). It's the same components you
+know and love, no longer surrounded by mustaches. \o/
 
 [![Build Status](https://travis-ci.org/rwjblue/ember-angle-bracket-invocation-polyfill.svg?branch=master)](https://travis-ci.org/rwjblue/ember-angle-bracket-invocation-polyfill)
 
@@ -13,18 +14,42 @@ Installation
 ember install ember-angle-bracket-invocation-polyfill
 ```
 
-
 Usage
 ------------------------------------------------------------------------------
 
-Simply invoke
+The best usage guide is [the RFC itself](https://github.com/emberjs/rfcs/blob/master/text/0311-angle-bracket-invocation.md),
+but here are a few examples of "before"/"after" to whet your appetite:
 
+### Before:
+
+```hbs
+{{site-header user=this.user class=(if this.user.isAdmin "admin")}}
+
+{{#super-select selected=this.user.country as |s|}}
+  {{#each this.availableCountries as |country|}}
+    {{#s.option value=country}}{{country.name}}{{/s.option}}
+  {{/each}}
+{{/super-select}}
+
+```
+
+### After:
+
+```hbs
+<SiteHeader @user={{this.user}} class={{if this.user.isAdmin "admin"}} />
+
+<SuperSelect @selected={{this.user.country}} as |Option|>
+  {{#each this.availableCountries as |country|}}
+    <Option @value={{country}}>{{country.name}}</Option>
+  {{/each}}
+</SuperSelect>
+```
 
 Limitations
 ------------------------------------------------------------------------------
 
 Not all features described in the RFC are polyfilled.
-This addon does not support the follow features:
+This addon does not support the following features:
 
 - Single word component names
 - Explicitly splatting attributes with `...attributes`.
