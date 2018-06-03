@@ -215,4 +215,15 @@ module('Integration | Component | angle-bracket-invocation', function(hooks) {
       assert.dom().hasText('Yes');
     });
   });
+
+  module('...attributes', function() {
+    test('passing into angle invocation', async function(assert) {
+      this.owner.register('template:components/x-outer', hbs`<XInner ...attributes />`);
+      this.owner.register('template:components/x-inner', hbs`hi martin!`);
+
+      await render(hbs`<XOuter data-test-foo />`);
+
+      assert.dom('[data-test-foo]').hasText('hi martin!');
+    });
+  });
 });
