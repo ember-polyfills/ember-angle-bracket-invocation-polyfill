@@ -6,11 +6,11 @@ import hbs from 'htmlbars-inline-precompile';
 import Service, { inject as injectService } from '@ember/service';
 import Component from '@ember/component';
 
-module('Integration | Component | angle-bracket-invocation', function (hooks) {
+module('Integration | Component | angle-bracket-invocation', function(hooks) {
   setupRenderingTest(hooks);
 
-  module('static component support', function () {
-    test('invoke without block', async function (assert) {
+  module('static component support', function() {
+    test('invoke without block', async function(assert) {
       this.owner.register('template:components/foo-bar', hbs`hi martin!`);
 
       await render(hbs`<FooBar />`);
@@ -18,7 +18,7 @@ module('Integration | Component | angle-bracket-invocation', function (hooks) {
       assert.dom().hasText('hi martin!');
     });
 
-    test('invoke with block', async function (assert) {
+    test('invoke with block', async function(assert) {
       this.owner.register('template:components/foo-bar', hbs`{{yield}}`);
 
       await render(hbs`<FooBar>hi rwjblue!</FooBar>`);
@@ -26,7 +26,7 @@ module('Integration | Component | angle-bracket-invocation', function (hooks) {
       assert.dom().hasText('hi rwjblue!');
     });
 
-    test('yielding block param', async function (assert) {
+    test('yielding block param', async function(assert) {
       this.owner.register('template:components/foo-bar', hbs`{{yield 'hi'}}`);
 
       await render(hbs`<FooBar as |salutation|>{{salutation}} rwjblue!</FooBar>`);
@@ -34,7 +34,7 @@ module('Integration | Component | angle-bracket-invocation', function (hooks) {
       assert.dom().hasText('hi rwjblue!');
     });
 
-    test('with arguments', async function (assert) {
+    test('with arguments', async function(assert) {
       this.owner.register('template:components/foo-bar', hbs`<h2>{{title}}</h2>`);
 
       this.set('title', "rwjblue's component");
@@ -70,7 +70,7 @@ module('Integration | Component | angle-bracket-invocation', function (hooks) {
   });
 
   module('dynamic component support', function() {
-    test('invoke dynamic - local, self-closing', async function (assert) {
+    test('invoke dynamic - local, self-closing', async function(assert) {
       this.owner.register('template:components/foo-bar', hbs`hi rwjblue!`);
 
       await render(hbs`
@@ -79,10 +79,10 @@ module('Integration | Component | angle-bracket-invocation', function (hooks) {
         {{/with}}
       `);
 
-      assert.dom().hasText("hi rwjblue!");
+      assert.dom().hasText('hi rwjblue!');
     });
 
-    test('invoke dynamic - local path', async function (assert) {
+    test('invoke dynamic - local path', async function(assert) {
       this.owner.register('template:components/foo-bar', hbs`hi rwjblue!`);
 
       await render(hbs`
@@ -91,10 +91,10 @@ module('Integration | Component | angle-bracket-invocation', function (hooks) {
         {{/with}}
       `);
 
-      assert.dom().hasText("hi rwjblue!");
+      assert.dom().hasText('hi rwjblue!');
     });
 
-    test('invoke dynamic - local, block', async function (assert) {
+    test('invoke dynamic - local, block', async function(assert) {
       this.owner.register('template:components/foo-bar', hbs`{{yield}}!`);
 
       await render(hbs`
@@ -103,10 +103,10 @@ module('Integration | Component | angle-bracket-invocation', function (hooks) {
         {{/with}}
       `);
 
-      assert.dom().hasText("hi rwjblue!");
+      assert.dom().hasText('hi rwjblue!');
     });
 
-    test('invoke dynamic - local, block, block param', async function (assert) {
+    test('invoke dynamic - local, block, block param', async function(assert) {
       this.owner.register('template:components/foo-bar', hbs`{{yield 'hi'}}!`);
 
       await render(hbs`
@@ -115,7 +115,7 @@ module('Integration | Component | angle-bracket-invocation', function (hooks) {
         {{/with}}
       `);
 
-      assert.dom().hasText("hi rwjblue!");
+      assert.dom().hasText('hi rwjblue!');
     });
 
     test('local with single attribute', async function(assert) {
@@ -130,66 +130,72 @@ module('Integration | Component | angle-bracket-invocation', function (hooks) {
       assert.dom('[data-foo="bar"]').exists();
     });
 
-    test('invoke dynamic - path', async function (assert) {
+    test('invoke dynamic - path', async function(assert) {
       this.owner.register('service:elsewhere', Service.extend());
-      this.owner.register('component:x-invoker', Component.extend({
-        elsewhere: injectService(),
+      this.owner.register(
+        'component:x-invoker',
+        Component.extend({
+          elsewhere: injectService(),
 
-        init() {
-          this._super(...arguments);
+          init() {
+            this._super(...arguments);
 
-          let elsewhere = this.get('elsewhere');
-          elsewhere.set('curriedThing', this.curriedThing);
-        }
-      }));
+            let elsewhere = this.get('elsewhere');
+            elsewhere.set('curriedThing', this.curriedThing);
+          },
+        })
+      );
       this.owner.register('template:components/x-invoker', hbs`<this.elsewhere.curriedThing />`);
       this.owner.register('template:components/foo-bar', hbs`hi rwjblue!`);
 
       await render(hbs`{{x-invoker curriedThing=(component 'foo-bar')}}`);
 
-      assert.dom().hasText("hi rwjblue!");
+      assert.dom().hasText('hi rwjblue!');
     });
 
-    test('invoke dynamic - path no implicit this', async function (assert) {
+    test('invoke dynamic - path no implicit this', async function(assert) {
       this.owner.register('service:elsewhere', Service.extend());
-      this.owner.register('component:x-invoker', Component.extend({
-        elsewhere: injectService(),
+      this.owner.register(
+        'component:x-invoker',
+        Component.extend({
+          elsewhere: injectService(),
 
-        init() {
-          this._super(...arguments);
+          init() {
+            this._super(...arguments);
 
-          let elsewhere = this.get('elsewhere');
-          elsewhere.set('curriedThing', this.curriedThing);
-        }
-      }));
+            let elsewhere = this.get('elsewhere');
+            elsewhere.set('curriedThing', this.curriedThing);
+          },
+        })
+      );
       this.owner.register('template:components/x-invoker', hbs`<elsewhere.curriedThing />`);
       this.owner.register('template:components/foo-bar', hbs`hi rwjblue!`);
 
       await render(hbs`{{x-invoker curriedThing=(component 'foo-bar')}}`);
 
       // should not have rendered anything (no implicit `this`)
-      assert.dom().hasText("");
+      assert.dom().hasText('');
     });
   });
 
-  module('has-block', function (hooks) {
-    hooks.beforeEach(function () {
+  module('has-block', function(hooks) {
+    hooks.beforeEach(function() {
       this.owner.register('template:components/foo-bar', hbs`{{#if hasBlock}}Yes{{else}}No{{/if}}`);
     });
 
-    test('when self-closing', async function (assert) {
+    test('when self-closing', async function(assert) {
       await render(hbs`<FooBar />`);
 
       assert.dom().hasText('No');
     });
 
-    test('with block', async function (assert) {
+    test('with block', async function(assert) {
       await render(hbs`<FooBar>Stuff</FooBar>`);
 
       assert.dom().hasText('Yes');
     });
 
-    test('invoking dynamically - self-closing', async function (assert) {
+    test('invoking dynamically - self-closing', async function(assert) {
       await render(hbs`
         {{#with (component 'foo-bar') as |LolBar|}}
           <LolBar />
@@ -199,7 +205,7 @@ module('Integration | Component | angle-bracket-invocation', function (hooks) {
       assert.dom().hasText('No');
     });
 
-    test('invoking dynamically - with block', async function (assert) {
+    test('invoking dynamically - with block', async function(assert) {
       await render(hbs`
         {{#with (component 'foo-bar') as |LolBar|}}
           <LolBar></LolBar>
