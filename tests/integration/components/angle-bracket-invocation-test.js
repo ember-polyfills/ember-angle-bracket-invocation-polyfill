@@ -82,6 +82,18 @@ module('Integration | Component | angle-bracket-invocation', function (hooks) {
       assert.dom().hasText("hi rwjblue!");
     });
 
+    test('invoke dynamic - local path', async function (assert) {
+      this.owner.register('template:components/foo-bar', hbs`hi rwjblue!`);
+
+      await render(hbs`
+        {{#with (hash here=(component 'foo-bar')) as |stuff|}}
+          <stuff.here />
+        {{/with}}
+      `);
+
+      assert.dom().hasText("hi rwjblue!");
+    });
+
     test('invoke dynamic - local, block', async function (assert) {
       this.owner.register('template:components/foo-bar', hbs`{{yield}}!`);
 
@@ -130,12 +142,33 @@ module('Integration | Component | angle-bracket-invocation', function (hooks) {
           elsewhere.set('curriedThing', this.curriedThing);
         }
       }));
-      this.owner.register('template:components/x-invoker', hbs`<elsewhere.curriedThing />`);
+      this.owner.register('template:components/x-invoker', hbs`<this.elsewhere.curriedThing />`);
       this.owner.register('template:components/foo-bar', hbs`hi rwjblue!`);
 
       await render(hbs`{{x-invoker curriedThing=(component 'foo-bar')}}`);
 
       assert.dom().hasText("hi rwjblue!");
+    });
+
+    test('invoke dynamic - path no implicit this', async function (assert) {
+      this.owner.register('service:elsewhere', Service.extend());
+      this.owner.register('component:x-invoker', Component.extend({
+        elsewhere: injectService(),
+
+        init() {
+          this._super(...arguments);
+
+          let elsewhere = this.get('elsewhere');
+          elsewhere.set('curriedThing', this.curriedThing);
+        }
+      }));
+      this.owner.register('template:components/x-invoker', hbs`<elsewhere.curriedThing />`);
+      this.owner.register('template:components/foo-bar', hbs`hi rwjblue!`);
+
+      await render(hbs`{{x-invoker curriedThing=(component 'foo-bar')}}`);
+
+      // should not have rendered anything (no implicit `this`)
+      assert.dom().hasText("");
     });
   });
 
