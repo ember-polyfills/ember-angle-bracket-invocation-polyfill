@@ -186,7 +186,7 @@ import { gte } from 'ember-compatibility-helpers';
         return registry;
       },
     });
-  } else if (gte('2.18.0-beta.1')) {
+  } else if (gte('2.16.0-beta.1')) {
     Application.reopenClass({
       buildRegistry() {
         let registry = this._super(...arguments);
