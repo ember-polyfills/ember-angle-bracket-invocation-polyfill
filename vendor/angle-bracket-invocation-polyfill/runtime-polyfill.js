@@ -5,7 +5,7 @@ import { gte } from 'ember-compatibility-helpers';
 (function() {
   const { Application, Component, computed, getOwner } = Ember;
 
-  if (gte('3.2.0-beta.1')) {
+  if (gte('3.1.0-beta.1')) {
     const P = Ember.__loader.require('container').privatize;
     const { combineTagged } = Ember.__loader.require('@glimmer/reference');
     const { clientBuilder } = Ember.__loader.require('@glimmer/runtime');
