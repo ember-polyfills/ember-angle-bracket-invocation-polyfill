@@ -33,7 +33,7 @@ module.exports = {
       return;
     }
 
-    this.import('vendor/angle-bracket-invocation-polyfill/index.js');
+    this.import('vendor/angle-bracket-invocation-polyfill/runtime-polyfill.js');
   },
 
   treeForVendor(rawVendorTree) {
