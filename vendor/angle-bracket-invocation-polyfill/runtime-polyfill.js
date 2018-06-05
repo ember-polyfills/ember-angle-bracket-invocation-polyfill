@@ -3,8 +3,10 @@
 import { gte } from 'ember-compatibility-helpers';
 
 (function() {
+  const P = Ember.__loader.require('container').privatize;
   const { Application, Component, computed, getOwner } = Ember;
   const { combineTagged } = Ember.__loader.require('@glimmer/reference');
+  const { clientBuilder } = Ember.__loader.require('@glimmer/runtime');
 
   class WrappedNamedArguments {
     constructor(references) {
@@ -46,19 +48,101 @@ import { gte } from 'ember-compatibility-helpers';
     return new WrappedNamedArguments(references);
   }
 
-  if (gte('3.1.0-beta.1')) {
-    const P = Ember.__loader.require('container').privatize;
-    const { clientBuilder } = Ember.__loader.require('@glimmer/runtime');
+  class AttributeTracker {
+    constructor(environment, element, attributeName, reference) {
+      this._environment = environment;
+      this._attribute = environment.attributeFor(element, attributeName, false);
+      this._reference = reference;
+      this.tag = reference.tag;
+      this.lastRevision = this.tag.value();
+    }
 
+    set(dom) {
+      this._attribute.set(dom, this._reference.value(), this._environment);
+      this.lastRevision = this.tag.value();
+    }
+
+    update() {
+      if (!this.tag.validate(this.lastRevision)) {
+        this._attribute.update(this._reference.value(), this._environment);
+        this.lastRevision = this.tag.value();
+      }
+    }
+  }
+
+  function buildSplattributesManager(owner) {
+    return {
+      create(element, args, scope, dom) {
+        let environment = owner.lookup('service:-glimmer-environment');
+        let domBuilder = clientBuilder(environment, {});
+        domBuilder.constructing = element;
+
+        let { positional } = args.capture();
+        let invocationAttributesReference = positional.at(0);
+        let invocationAttributes = invocationAttributesReference.value();
+        let attributeNames = Object.keys(invocationAttributes);
+        let dynamicAttributes = {};
+
+        for (let i = 0; i < attributeNames.length; i++) {
+          let attributeName = attributeNames[i];
+          dynamicAttributes[attributeName] = new AttributeTracker(
+            environment,
+            element,
+            attributeName,
+            invocationAttributes[attributeName]
+          );
+        }
+
+        return {
+          invocationAttributes,
+          dynamicAttributes,
+          dom,
+          domBuilder,
+          environment,
+        };
+      },
+
+      getTag({ invocationAttributes }) {
+        let referencesArray = [];
+        for (let reference in invocationAttributes) {
+          referencesArray.push(invocationAttributes[reference]);
+        }
+        return combineTagged(referencesArray);
+      },
+
+      install(bucket) {
+        let { dynamicAttributes, domBuilder } = bucket;
+
+        for (let name in dynamicAttributes) {
+          let attribute = dynamicAttributes[name];
+          attribute.set(domBuilder);
+        }
+      },
+
+      update(bucket) {
+        let { dynamicAttributes } = bucket;
+
+        for (let name in dynamicAttributes) {
+          let attribute = dynamicAttributes[name];
+          attribute.update();
+        }
+      },
+
+      getDestructor() {},
+    };
+  }
+
+  if (gte('3.1.0-beta.1')) {
     Application.reopenClass({
       buildRegistry() {
         let registry = this._super(...arguments);
+
         let compilerName = gte('3.2.0-alpha.1')
           ? P`template-compiler:main`
           : P`template-options:main`;
         let TemplateCompiler = registry.resolve(compilerName);
-        let originalCreate = TemplateCompiler.create;
 
+        let originalCreate = TemplateCompiler.create;
         TemplateCompiler.create = function(options) {
           let owner = getOwner(options);
           let compiler = originalCreate(...arguments);
@@ -67,6 +151,7 @@ import { gte } from 'ember-compatibility-helpers';
 
           // setup our reference capture system
           runtimeResolver.builtInHelpers['-merge-refs'] = mergeRefsHelper;
+          runtimeResolver.builtInModifiers._splattributes = buildSplattributesManager(owner);
 
           // setup our custom attribute bindings directly from the references passed in
           let ORIGINAL_LOOKUP_COMPONENT_DEFINITION = runtimeResolver._lookupComponentDefinition;
@@ -98,98 +183,60 @@ import { gte } from 'ember-compatibility-helpers';
             return definition;
           };
 
-          /*
-            export interface ModifierManager<T = Modifier> {
-                create(element: Element, args: IArguments, dynamicScope: DynamicScope, dom: DOMChanges): T;
-                getTag(component: T): Tag;
-                install(modifier: T): void;
-                update(modifier: T): void;
-                getDestructor(modifier: T): Option<Destroyable>;
-            }
-          */
-          class AttributeTracker {
-            constructor(environment, element, attributeName, reference) {
-              this._environment = environment;
-              this._attribute = environment.attributeFor(element, attributeName, false);
-              this._reference = reference;
-              this.tag = reference.tag;
-              this.lastRevision = this.tag.value();
-            }
+          return compiler;
+        };
 
-            set(dom) {
-              this._attribute.set(dom, this._reference.value(), this._environment);
-              this.lastRevision = this.tag.value();
-            }
+        return registry;
+      },
+    });
+  } else if (gte('2.18.0-beta.1')) {
+    Application.reopenClass({
+      buildRegistry() {
+        let registry = this._super(...arguments);
 
-            update() {
-              if (!this.tag.validate(this.lastRevision)) {
-                this._attribute.update(this._reference.value(), this._environment);
-                this.lastRevision = this.tag.value();
-              }
-            }
-          }
+        let Environment = registry.resolve('service:-glimmer-environment');
+        let ORIGINAL_ENVIRONMENT_CREATE = Environment.create;
+        Environment.create = function(options) {
+          let owner = getOwner(options);
+          let environment = ORIGINAL_ENVIRONMENT_CREATE.apply(this, arguments);
+          let installedCustomDidCreateElement = false;
 
-          runtimeResolver.builtInModifiers._splattributes = {
-            create(element, args, scope, dom) {
-              let environment = owner.lookup('service:-glimmer-environment');
-              let domBuilder = clientBuilder(environment, {});
-              domBuilder.constructing = element;
+          environment.builtInHelpers['-merge-refs'] = mergeRefsHelper;
+          environment.builtInModifiers._splattributes = buildSplattributesManager(owner);
+          let originalGetComponentDefinition = environment.getComponentDefinition;
+          environment.getComponentDefinition = function() {
+            let definition = originalGetComponentDefinition.apply(this, arguments);
 
-              let { positional } = args.capture();
-              let invocationAttributesReference = positional.at(0);
-              let invocationAttributes = invocationAttributesReference.value();
-              let attributeNames = Object.keys(invocationAttributes);
-              let dynamicAttributes = {};
+            if (!installedCustomDidCreateElement && definition) {
+              let { manager } = definition;
 
-              for (let i = 0; i < attributeNames.length; i++) {
-                let attributeName = attributeNames[i];
-                dynamicAttributes[attributeName] = new AttributeTracker(
-                  environment,
-                  element,
-                  attributeName,
-                  invocationAttributes[attributeName]
-                );
-              }
+              let ORIGINAL_DID_CREATE_ELEMENT = manager.didCreateElement;
+              manager.didCreateElement = function(bucket, element, operations) {
+                ORIGINAL_DID_CREATE_ELEMENT.apply(this, arguments);
+                let { args } = bucket;
+                if (args.has('__ANGLE_ATTRS__')) {
+                  let attributeReferences = args.get('__ANGLE_ATTRS__').value();
+                  for (let attributeName in attributeReferences) {
+                    let attributeReference = attributeReferences[attributeName];
 
-              return {
-                invocationAttributes,
-                dynamicAttributes,
-                dom,
-                domBuilder,
-                environment,
+                    operations.addDynamicAttribute(
+                      element,
+                      attributeName,
+                      attributeReference,
+                      false,
+                      null
+                    );
+                  }
+                }
               };
-            },
 
-            getTag({ invocationAttributes }) {
-              let referencesArray = [];
-              for (let reference in invocationAttributes) {
-                referencesArray.push(invocationAttributes[reference]);
-              }
-              return combineTagged(referencesArray);
-            },
+              installedCustomDidCreateElement = true;
+            }
 
-            install(bucket) {
-              let { dynamicAttributes, domBuilder } = bucket;
-
-              for (let name in dynamicAttributes) {
-                let attribute = dynamicAttributes[name];
-                attribute.set(domBuilder);
-              }
-            },
-
-            update(bucket) {
-              let { dynamicAttributes } = bucket;
-
-              for (let name in dynamicAttributes) {
-                let attribute = dynamicAttributes[name];
-                attribute.update();
-              }
-            },
-
-            getDestructor() {},
+            return definition;
           };
 
-          return compiler;
+          return environment;
         };
 
         return registry;
