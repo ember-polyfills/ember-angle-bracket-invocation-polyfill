@@ -2,7 +2,6 @@
 /* eslint-disable ember/new-module-imports */
 import { gte } from 'ember-compatibility-helpers';
 
-// Based heavily on https://github.com/mmun/ember-component-attributes
 (function() {
   const { Application, Component, computed, getOwner } = Ember;
 
@@ -192,6 +191,7 @@ import { gte } from 'ember-compatibility-helpers';
       },
     });
   } else {
+    // Based heavily on https://github.com/mmun/ember-component-attributes
     Component.reopen({
       __ANGLE_ATTRS__: computed({
         set(key, value) {
