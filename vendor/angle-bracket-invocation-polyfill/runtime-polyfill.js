@@ -1,12 +1,16 @@
 /* globals Ember */
 /* eslint-disable ember/new-module-imports */
-import { gte } from 'ember-compatibility-helpers';
+import { lte, gte } from 'ember-compatibility-helpers';
 
 (function() {
   const P = Ember.__loader.require('container').privatize;
   const { Application, Component, computed, getOwner } = Ember;
-  const { combineTagged } = Ember.__loader.require('@glimmer/reference');
-  const { clientBuilder } = Ember.__loader.require('@glimmer/runtime');
+  const { combineTagged } = Ember.__loader.require(
+    gte('2.13.0-alpha.1') ? '@glimmer/reference' : 'glimmer-reference'
+  );
+  const { clientBuilder } = Ember.__loader.require(
+    gte('2.13.0-alpha.1') ? '@glimmer/runtime' : 'glimmer-runtime'
+  );
 
   class WrappedNamedArguments {
     constructor(references) {
@@ -31,8 +35,9 @@ import { gte } from 'ember-compatibility-helpers';
     let references = {};
 
     if (invocationReferences) {
-      for (let i = 0; i < invocationReferences.names.length; i++) {
-        let name = invocationReferences.names[i];
+      let names = gte('2.15.0-beta.1') ? invocationReferences.names : invocationReferences.keys;
+      for (let i = 0; i < names.length; i++) {
+        let name = names[i];
         let reference = invocationReferences.get(name);
 
         references[name] = reference;
@@ -186,7 +191,7 @@ import { gte } from 'ember-compatibility-helpers';
         return registry;
       },
     });
-  } else if (gte('2.16.0-beta.1')) {
+  } else if (gte('2.12.0-beta.1')) {
     Application.reopenClass({
       buildRegistry() {
         let registry = this._super(...arguments);
@@ -227,7 +232,7 @@ import { gte } from 'ember-compatibility-helpers';
 
           environment.builtInModifiers._splattributes = {
             create(element, args, scope, dom) {
-              let { positional } = args.capture();
+              let positional = gte('2.15.0-beta.1') ? args.capture().positional : args.positional;
               let invocationAttributesReference = positional.at(0);
               let invocationAttributes = invocationAttributesReference.value();
               let attributeNames = Object.keys(invocationAttributes);
@@ -284,13 +289,21 @@ import { gte } from 'ember-compatibility-helpers';
             let definition = originalGetComponentDefinition.apply(this, arguments);
 
             if (!installedCustomDidCreateElement && definition) {
+              installedCustomDidCreateElement = true;
+
               let { manager } = definition;
 
               let ORIGINAL_DID_CREATE_ELEMENT = manager.didCreateElement;
               manager.didCreateElement = function(bucket, element, operations) {
                 ORIGINAL_DID_CREATE_ELEMENT.apply(this, arguments);
                 let { args } = bucket;
-                if (args.has('__ANGLE_ATTRS__')) {
+
+                if (lte('2.15.0-beta.1')) {
+                  args = args.namedArgs;
+                }
+
+                // on < 2.15 `namedArgs` is only present when there were arguments
+                if (args && args.has('__ANGLE_ATTRS__')) {
                   let attributeReferences = args.get('__ANGLE_ATTRS__').value();
                   for (let attributeName in attributeReferences) {
                     let attributeReference = attributeReferences[attributeName];
@@ -305,8 +318,6 @@ import { gte } from 'ember-compatibility-helpers';
                   }
                 }
               };
-
-              installedCustomDidCreateElement = true;
             }
 
             return definition;
