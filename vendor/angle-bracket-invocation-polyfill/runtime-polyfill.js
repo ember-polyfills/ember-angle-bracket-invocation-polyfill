@@ -193,8 +193,7 @@ import { gte } from 'ember-compatibility-helpers';
 
         let Environment = registry.resolve('service:-glimmer-environment');
         let ORIGINAL_ENVIRONMENT_CREATE = Environment.create;
-        Environment.create = function(options) {
-          let owner = getOwner(options);
+        Environment.create = function() {
           let environment = ORIGINAL_ENVIRONMENT_CREATE.apply(this, arguments);
           let installedCustomDidCreateElement = false;
 
