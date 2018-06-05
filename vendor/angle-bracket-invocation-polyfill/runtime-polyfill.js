@@ -48,90 +48,6 @@ import { gte } from 'ember-compatibility-helpers';
     return new WrappedNamedArguments(references);
   }
 
-  class AttributeTracker {
-    constructor(environment, element, attributeName, reference) {
-      this._environment = environment;
-      this._attribute = environment.attributeFor(element, attributeName, false);
-      this._reference = reference;
-      this.tag = reference.tag;
-      this.lastRevision = this.tag.value();
-    }
-
-    set(dom) {
-      this._attribute.set(dom, this._reference.value(), this._environment);
-      this.lastRevision = this.tag.value();
-    }
-
-    update() {
-      if (!this.tag.validate(this.lastRevision)) {
-        this._attribute.update(this._reference.value(), this._environment);
-        this.lastRevision = this.tag.value();
-      }
-    }
-  }
-
-  function buildSplattributesManager(owner) {
-    return {
-      create(element, args, scope, dom) {
-        let environment = owner.lookup('service:-glimmer-environment');
-        let domBuilder = clientBuilder(environment, {});
-        domBuilder.constructing = element;
-
-        let { positional } = args.capture();
-        let invocationAttributesReference = positional.at(0);
-        let invocationAttributes = invocationAttributesReference.value();
-        let attributeNames = Object.keys(invocationAttributes);
-        let dynamicAttributes = {};
-
-        for (let i = 0; i < attributeNames.length; i++) {
-          let attributeName = attributeNames[i];
-          dynamicAttributes[attributeName] = new AttributeTracker(
-            environment,
-            element,
-            attributeName,
-            invocationAttributes[attributeName]
-          );
-        }
-
-        return {
-          invocationAttributes,
-          dynamicAttributes,
-          dom,
-          domBuilder,
-          environment,
-        };
-      },
-
-      getTag({ invocationAttributes }) {
-        let referencesArray = [];
-        for (let reference in invocationAttributes) {
-          referencesArray.push(invocationAttributes[reference]);
-        }
-        return combineTagged(referencesArray);
-      },
-
-      install(bucket) {
-        let { dynamicAttributes, domBuilder } = bucket;
-
-        for (let name in dynamicAttributes) {
-          let attribute = dynamicAttributes[name];
-          attribute.set(domBuilder);
-        }
-      },
-
-      update(bucket) {
-        let { dynamicAttributes } = bucket;
-
-        for (let name in dynamicAttributes) {
-          let attribute = dynamicAttributes[name];
-          attribute.update();
-        }
-      },
-
-      getDestructor() {},
-    };
-  }
-
   if (gte('3.1.0-beta.1')) {
     Application.reopenClass({
       buildRegistry() {
@@ -151,7 +67,88 @@ import { gte } from 'ember-compatibility-helpers';
 
           // setup our reference capture system
           runtimeResolver.builtInHelpers['-merge-refs'] = mergeRefsHelper;
-          runtimeResolver.builtInModifiers._splattributes = buildSplattributesManager(owner);
+
+          class AttributeTracker {
+            constructor(environment, element, attributeName, reference) {
+              this._environment = environment;
+              this._attribute = environment.attributeFor(element, attributeName, false);
+              this._reference = reference;
+              this.tag = reference.tag;
+              this.lastRevision = this.tag.value();
+            }
+
+            set(dom) {
+              this._attribute.set(dom, this._reference.value(), this._environment);
+              this.lastRevision = this.tag.value();
+            }
+
+            update() {
+              if (!this.tag.validate(this.lastRevision)) {
+                this._attribute.update(this._reference.value(), this._environment);
+                this.lastRevision = this.tag.value();
+              }
+            }
+          }
+
+          runtimeResolver.builtInModifiers._splattributes = {
+            create(element, args, scope, dom) {
+              let environment = owner.lookup('service:-glimmer-environment');
+              let domBuilder = clientBuilder(environment, {});
+              domBuilder.constructing = element;
+
+              let { positional } = args.capture();
+              let invocationAttributesReference = positional.at(0);
+              let invocationAttributes = invocationAttributesReference.value();
+              let attributeNames = Object.keys(invocationAttributes);
+              let dynamicAttributes = {};
+
+              for (let i = 0; i < attributeNames.length; i++) {
+                let attributeName = attributeNames[i];
+                dynamicAttributes[attributeName] = new AttributeTracker(
+                  environment,
+                  element,
+                  attributeName,
+                  invocationAttributes[attributeName]
+                );
+              }
+
+              return {
+                invocationAttributes,
+                dynamicAttributes,
+                dom,
+                domBuilder,
+                environment,
+              };
+            },
+
+            getTag({ invocationAttributes }) {
+              let referencesArray = [];
+              for (let reference in invocationAttributes) {
+                referencesArray.push(invocationAttributes[reference]);
+              }
+              return combineTagged(referencesArray);
+            },
+
+            install(bucket) {
+              let { dynamicAttributes, domBuilder } = bucket;
+
+              for (let name in dynamicAttributes) {
+                let attribute = dynamicAttributes[name];
+                attribute.set(domBuilder);
+              }
+            },
+
+            update(bucket) {
+              let { dynamicAttributes } = bucket;
+
+              for (let name in dynamicAttributes) {
+                let attribute = dynamicAttributes[name];
+                attribute.update();
+              }
+            },
+
+            getDestructor() {},
+          };
 
           // setup our custom attribute bindings directly from the references passed in
           let ORIGINAL_LOOKUP_COMPONENT_DEFINITION = runtimeResolver._lookupComponentDefinition;
@@ -202,7 +199,87 @@ import { gte } from 'ember-compatibility-helpers';
           let installedCustomDidCreateElement = false;
 
           environment.builtInHelpers['-merge-refs'] = mergeRefsHelper;
-          environment.builtInModifiers._splattributes = buildSplattributesManager(owner);
+
+          class AttributeTracker {
+            constructor(element, attributeName, reference) {
+              this._element = element;
+              this._attribute = environment.attributeFor(element, attributeName, false);
+              this._reference = reference;
+              this.tag = reference.tag;
+              this.lastRevision = this.tag.value();
+            }
+
+            set() {
+              this._attribute.setAttribute(environment, this._element, this._reference.value());
+              this.lastRevision = this.tag.value();
+            }
+
+            update() {
+              if (!this.tag.validate(this.lastRevision)) {
+                this._attribute.updateAttribute(
+                  environment,
+                  this._element,
+                  this._reference.value()
+                );
+                this.lastRevision = this.tag.value();
+              }
+            }
+          }
+
+          environment.builtInModifiers._splattributes = {
+            create(element, args, scope, dom) {
+              let { positional } = args.capture();
+              let invocationAttributesReference = positional.at(0);
+              let invocationAttributes = invocationAttributesReference.value();
+              let attributeNames = Object.keys(invocationAttributes);
+              let dynamicAttributes = {};
+
+              for (let i = 0; i < attributeNames.length; i++) {
+                let attributeName = attributeNames[i];
+                dynamicAttributes[attributeName] = new AttributeTracker(
+                  element,
+                  attributeName,
+                  invocationAttributes[attributeName]
+                );
+              }
+
+              return {
+                invocationAttributes,
+                dynamicAttributes,
+                dom,
+                environment,
+              };
+            },
+
+            getTag({ invocationAttributes }) {
+              let referencesArray = [];
+              for (let reference in invocationAttributes) {
+                referencesArray.push(invocationAttributes[reference]);
+              }
+              return combineTagged(referencesArray);
+            },
+
+            install(bucket) {
+              let { dynamicAttributes } = bucket;
+
+              for (let name in dynamicAttributes) {
+                let attribute = dynamicAttributes[name];
+                attribute.set();
+              }
+            },
+
+            update(bucket) {
+              let { dynamicAttributes } = bucket;
+
+              for (let name in dynamicAttributes) {
+                let attribute = dynamicAttributes[name];
+                attribute.update();
+              }
+            },
+
+            getDestructor() {},
+          };
+
           let originalGetComponentDefinition = environment.getComponentDefinition;
           environment.getComponentDefinition = function() {
             let definition = originalGetComponentDefinition.apply(this, arguments);
