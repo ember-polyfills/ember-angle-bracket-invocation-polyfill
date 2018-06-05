@@ -18,7 +18,7 @@ module.exports = {
     if (this.shouldPolyfill) {
       registry.add('htmlbars-ast-plugin', {
         name: 'component-attributes',
-        plugin: require('./lib/angle-bracket-invocation-polyfill'),
+        plugin: require('./lib/ast-transform'),
         baseDir() {
           return __dirname;
         },
