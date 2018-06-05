@@ -101,8 +101,15 @@ but here are a few examples of "before"/"after" to whet your appetite:
 <FooBar ...attributes>
 ```
 
+- Supports passing `...attributes` into a non-component element
+
+```hbs
+<div ...attributes></div>
+```
+
+- Supports passing `...attributes` into tagless components
 - Completely innert when running Ember 3.4 or higher
-- Supports Ember 2.12, 2.16, 2.18, 3.2, 3.3
+- Supports Ember 2.12, 2.16, 2.18, 3.1, 3.2, 3.3
 - Test all the features listed above 😘
 
 ## Limitations
@@ -111,7 +118,6 @@ Not all features described in the RFC are polyfilled.
 This addon does not support the following features:
 
 - Single word component names
-- Explicitly splatting attributes with `...attributes`.
 
 ## Contributing
 

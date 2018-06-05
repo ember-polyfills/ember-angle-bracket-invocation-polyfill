@@ -18,7 +18,7 @@ module.exports = {
     if (this.shouldPolyfill) {
       registry.add('htmlbars-ast-plugin', {
         name: 'component-attributes',
-        plugin: require('./lib/angle-bracket-invocation-polyfill'),
+        plugin: require('./lib/ast-transform'),
         baseDir() {
           return __dirname;
         },
@@ -33,7 +33,7 @@ module.exports = {
       return;
     }
 
-    this.import('vendor/angle-bracket-invocation-polyfill/index.js');
+    this.import('vendor/angle-bracket-invocation-polyfill/runtime-polyfill.js');
   },
 
   treeForVendor(rawVendorTree) {
@@ -44,6 +44,8 @@ module.exports = {
     let babelAddon = this.addons.find(addon => addon.name === 'ember-cli-babel');
 
     let transpiledVendorTree = babelAddon.transpileTree(rawVendorTree, {
+      babel: this.options.babel,
+
       'ember-cli-babel': {
         compileModules: false,
       },

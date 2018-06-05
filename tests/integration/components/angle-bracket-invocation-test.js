@@ -218,24 +218,47 @@ module('Integration | Component | angle-bracket-invocation', function(hooks) {
 
   module('...attributes', function() {
     test('passing into angle invocation - no additional attributes', async function(assert) {
-      this.owner.register('template:components/x-outer', hbs`<XInner ...attributes />`);
-      this.owner.register('template:components/x-inner', hbs`hi martin!`);
+      this.owner.register('template:components/comp-outer', hbs`<CompInner ...attributes />`);
+      this.owner.register('template:components/comp-inner', hbs`hi martin!`);
 
-      await render(hbs`<XOuter data-test-foo />`);
+      await render(hbs`<CompOuter data-test-foo />`);
 
       assert.dom('[data-test-foo]').hasText('hi martin!');
     });
 
     test('passing into angle invocation - with additional attributes', async function(assert) {
       this.owner.register(
-        'template:components/x-outer',
-        hbs`<XInner data-one="from outer" data-two="from outer" ...attributes />`
+        'template:components/comp-outer',
+        hbs`<CompInner data-one="from outer" data-two="from outer" ...attributes />`
       );
-      this.owner.register('template:components/x-inner', hbs`hi martin!`);
+      this.owner.register('template:components/comp-inner', hbs`hi martin!`);
 
-      await render(hbs`<XOuter data-one="from render" />`);
+      await render(hbs`<CompOuter data-one="from render" />`);
 
       assert.dom('[data-one="from render"][data-two="from outer"]').hasText('hi martin!');
+    });
+
+    test('passing into element - normal component', async function(assert) {
+      this.owner.register(
+        'template:components/foo-bar',
+        hbs`<span ...attributes>hi martin!</span>`
+      );
+
+      await render(hbs`<FooBar data-test-my-thing />`);
+
+      assert.dom('span[data-test-my-thing]').hasText('hi martin!');
+    });
+
+    test('passing into element - tagless component', async function(assert) {
+      this.owner.register(
+        'template:components/foo-bar',
+        hbs`<span ...attributes>hi martin!</span>`
+      );
+      this.owner.register('component:foo-bar', Component.extend({ tagName: '' }));
+
+      await render(hbs`<FooBar data-test-my-thing />`);
+
+      assert.dom('span[data-test-my-thing]').hasText('hi martin!');
     });
   });
 });
