@@ -4,10 +4,50 @@ import { gte } from 'ember-compatibility-helpers';
 
 (function() {
   const { Application, Component, computed, getOwner } = Ember;
+  const { combineTagged } = Ember.__loader.require('@glimmer/reference');
+
+  class WrappedNamedArguments {
+    constructor(references) {
+      this.references = references;
+
+      let referencesArray = [];
+      for (let reference in references) {
+        referencesArray.push(references[reference]);
+      }
+      this.tag = combineTagged(referencesArray);
+    }
+
+    value() {
+      return this.references;
+    }
+  }
+
+  function mergeRefsHelper(_vm, args) {
+    let invocationReferences = args.named.has('invocation') && args.named.get('invocation');
+    let splatReferences = args.named.has('splat') && args.named.get('splat').value();
+
+    let references = {};
+
+    if (invocationReferences) {
+      for (let i = 0; i < invocationReferences.names.length; i++) {
+        let name = invocationReferences.names[i];
+        let reference = invocationReferences.get(name);
+
+        references[name] = reference;
+      }
+    }
+
+    if (splatReferences) {
+      for (let attributeName in splatReferences) {
+        references[attributeName] = splatReferences[attributeName];
+      }
+    }
+
+    return new WrappedNamedArguments(references);
+  }
 
   if (gte('3.1.0-beta.1')) {
     const P = Ember.__loader.require('container').privatize;
-    const { combineTagged } = Ember.__loader.require('@glimmer/reference');
     const { clientBuilder } = Ember.__loader.require('@glimmer/runtime');
 
     Application.reopenClass({
@@ -26,45 +66,7 @@ import { gte } from 'ember-compatibility-helpers';
           let runtimeResolver = compileTimeLookup.resolver;
 
           // setup our reference capture system
-          class WrappedNamedArguments {
-            constructor(references) {
-              this.references = references;
-
-              let referencesArray = [];
-              for (let reference in references) {
-                referencesArray.push(references[reference]);
-              }
-              this.tag = combineTagged(referencesArray);
-            }
-
-            value() {
-              return this.references;
-            }
-          }
-
-          runtimeResolver.builtInHelpers['-merge-refs'] = function(_vm, args) {
-            let invocationReferences = args.named.has('invocation') && args.named.get('invocation');
-            let splatReferences = args.named.has('splat') && args.named.get('splat').value();
-
-            let references = {};
-
-            if (invocationReferences) {
-              for (let i = 0; i < invocationReferences.names.length; i++) {
-                let name = invocationReferences.names[i];
-                let reference = invocationReferences.get(name);
-
-                references[name] = reference;
-              }
-            }
-
-            if (splatReferences) {
-              for (let attributeName in splatReferences) {
-                references[attributeName] = splatReferences[attributeName];
-              }
-            }
-
-            return new WrappedNamedArguments(references);
-          };
+          runtimeResolver.builtInHelpers['-merge-refs'] = mergeRefsHelper;
 
           // setup our custom attribute bindings directly from the references passed in
           let ORIGINAL_LOOKUP_COMPONENT_DEFINITION = runtimeResolver._lookupComponentDefinition;
