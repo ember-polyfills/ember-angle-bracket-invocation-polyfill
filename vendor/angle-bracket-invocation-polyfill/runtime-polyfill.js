@@ -13,7 +13,10 @@ import { gte } from 'ember-compatibility-helpers';
     Application.reopenClass({
       buildRegistry() {
         let registry = this._super(...arguments);
-        let TemplateCompiler = registry.resolve(P`template-compiler:main`);
+        let compilerName = gte('3.2.0-alpha.1')
+          ? P`template-compiler:main`
+          : P`template-options:main`;
+        let TemplateCompiler = registry.resolve(compilerName);
         let originalCreate = TemplateCompiler.create;
 
         TemplateCompiler.create = function(options) {
