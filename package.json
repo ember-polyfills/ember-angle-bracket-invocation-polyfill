@@ -58,6 +58,7 @@
     "node": "6.* || 8.* || 9.* || >= 10.*"
   },
   "ember-addon": {
-    "configPath": "tests/dummy/config"
+    "configPath": "tests/dummy/config",
+    "after": "ember-named-arguments-polyfill"
   }
 }
