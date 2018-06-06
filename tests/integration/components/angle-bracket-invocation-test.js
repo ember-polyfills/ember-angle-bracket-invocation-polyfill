@@ -153,6 +153,24 @@ module('Integration | Component | angle-bracket-invocation', function(hooks) {
       assert.dom().hasText('hi rwjblue!');
     });
 
+    test('invoke dynamic - named arguments', async function(assert) {
+      this.owner.register('template:components/x-invoker', hbs`<@curriedThing />`);
+      this.owner.register('template:components/foo-bar', hbs`hi rwjblue!`);
+
+      await render(hbs`{{x-invoker curriedThing=(component 'foo-bar')}}`);
+
+      assert.dom().hasText('hi rwjblue!');
+    });
+
+    test('invoke dynamic - named argument paths', async function(assert) {
+      this.owner.register('template:components/x-invoker', hbs`<@stuff.curriedThing />`);
+      this.owner.register('template:components/foo-bar', hbs`hi rwjblue!`);
+
+      await render(hbs`{{x-invoker stuff=(hash curriedThing=(component 'foo-bar'))}}`);
+
+      assert.dom().hasText('hi rwjblue!');
+    });
+
     test('invoke dynamic - path no implicit this', async function(assert) {
       this.owner.register('service:elsewhere', Service.extend());
       this.owner.register(
