@@ -4,12 +4,21 @@ import { render } from '@ember/test-helpers';
 import hbs from 'htmlbars-inline-precompile';
 
 import Service, { inject as injectService } from '@ember/service';
+import { helper as buildHelper } from '@ember/component/helper';
 import Component from '@ember/component';
 
 module('Integration | Component | angle-bracket-invocation', function(hooks) {
   setupRenderingTest(hooks);
 
   module('static component support', function() {
+    test('does not affect helper usage', async function(assert) {
+      this.owner.register('helper:my-helper', buildHelper(() => 'my-helper'));
+
+      await render(hbs`{{my-helper}}`);
+
+      assert.dom().hasText('my-helper');
+    });
+
     test('invoke without block', async function(assert) {
       this.owner.register('template:components/foo-bar', hbs`hi martin!`);
 
