@@ -162,7 +162,7 @@ import { lte, gte } from 'ember-compatibility-helpers';
             // call the original implementation
             let definition = ORIGINAL_LOOKUP_COMPONENT_DEFINITION.apply(this, arguments);
 
-            if (!installedCustomDidCreateElement) {
+            if (!installedCustomDidCreateElement && definition) {
               let { manager } = definition;
 
               let ORIGINAL_DID_CREATE_ELEMENT = manager.didCreateElement;
