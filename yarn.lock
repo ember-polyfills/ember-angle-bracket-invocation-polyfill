@@ -2153,6 +2153,13 @@ ember-maybe-import-regenerator@^0.1.6:
     ember-cli-babel "^6.0.0-beta.4"
     regenerator-runtime "^0.9.5"
 
+ember-named-arguments-polyfill@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/ember-named-arguments-polyfill/-/ember-named-arguments-polyfill-1.0.0.tgz#0b81fb81a7cef2c89e9e1d0278b579e708bf4ded"
+  dependencies:
+    ember-cli-babel "^6.6.0"
+    ember-cli-version-checker "^2.1.2"
+
 ember-qunit@^3.3.2:
   version "3.4.1"
   resolved "https://registry.yarnpkg.com/ember-qunit/-/ember-qunit-3.4.1.tgz#204a2d39a5d44d494c56bf17cf3fd12f06210359"
