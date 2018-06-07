@@ -43,6 +43,37 @@ module('Integration | Component | angle-bracket-invocation', function(hooks) {
       assert.dom().hasText('hi rwjblue!');
     });
 
+    test('yielding block param to nested child component using each-in', async function(assert) {
+      class ParentClazz extends Component {
+        get restaurants() {
+          return {
+            1: {
+              name: 'one',
+            },
+            2: {
+              name: 'two',
+            },
+          };
+        }
+        get layout() {
+          return hbs`{{yield restaurants}}`;
+        }
+      }
+
+      this.owner.register('component:the-parent', ParentClazz);
+      this.owner.register(
+        'template:components/the-child',
+        hbs`{{#each-in this.restaurants as |key item|}}<h1>{{item.name}}</h1>{{/each-in}}`
+      );
+
+      await render(
+        hbs`<TheParent as |restaurants|><TheChild @restaurants={{restaurants}} /></TheParent>`
+      );
+
+      assert.dom('h1:nth-of-type(1)').hasText('one');
+      assert.dom('h1:nth-of-type(2)').hasText('two');
+    });
+
     test('with arguments', async function(assert) {
       this.owner.register('template:components/foo-bar', hbs`<h2>{{title}}</h2>`);
 
