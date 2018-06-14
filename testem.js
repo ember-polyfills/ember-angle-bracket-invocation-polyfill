@@ -7,6 +7,7 @@ module.exports = {
   disable_watching: true,
   launch_in_ci: ['Chrome', 'Chromium'],
   launch_in_dev: ['Chrome'],
+  ignore_missing_launchers: true,
   xunit_intermediate_output: true,
   reporter: 'xunit',
   report_file,
