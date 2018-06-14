@@ -30,7 +30,7 @@ phases:
   - script: |
       set -e
       apt-get update
-      apt-get install chromium-browser
+      apt-get install -y chromium-browser
   - task: NodeTool@0
     inputs:
       versionSpec: "8.9.1"
