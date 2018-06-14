@@ -28,6 +28,8 @@ phases:
   queue: Hosted Linux Preview
   steps:
   - script: |
+      set -e
+      apt-get update
       apt-get install chromium-browser
   - task: NodeTool@0
     inputs:
