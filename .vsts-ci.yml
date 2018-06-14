@@ -17,3 +17,9 @@ phases:
   - powershell: |
       yarn test
     displayName: Run Tests
+  - task: PublishTestResults@2
+    displayName: Publish Tests Results
+    inputs:
+      testResultsFiles: 'results.xml'
+      searchFolder: '$(Build.StagingDirectory)/test-results'
+    condition: succeededOrFailed()

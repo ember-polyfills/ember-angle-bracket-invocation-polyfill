@@ -1,3 +1,7 @@
+const report_file = process.env.BUILD_STAGINGDIRECTORY
+  ? process.env.BUILD_STAGINGDIRECTORY + '/test-results/results.xml'
+  : 'test-results.xml';
+
 module.exports = {
   test_page: 'tests/index.html?hidepassed',
   disable_watching: true,
@@ -5,7 +9,7 @@ module.exports = {
   launch_in_dev: ['Chrome'],
   xunit_intermediate_output: true,
   reporter: 'xunit',
-  report_file: 'test-results.xml',
+  report_file,
   browser_args: {
     Chrome: {
       mode: 'ci',
