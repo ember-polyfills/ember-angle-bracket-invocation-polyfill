@@ -27,6 +27,8 @@ phases:
 - phase: Linux
   queue: Hosted Linux Preview
   steps:
+  - script: |
+      apt-get install chromium-browser
   - task: NodeTool@0
     inputs:
       versionSpec: "8.9.1"
