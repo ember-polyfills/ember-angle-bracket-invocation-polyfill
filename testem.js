@@ -2,13 +2,11 @@ const report_file = process.env.BUILD_STAGINGDIRECTORY
   ? process.env.BUILD_STAGINGDIRECTORY + '/test-results/results.xml'
   : 'test-results.xml';
 
-const NO_SANDBOX = process.env.TRAVIS || process.env.TS_BUILD;
-
 const CHROME_ARGS = {
   mode: 'ci',
   args: [
     // --no-sandbox is needed when running Chrome inside a container
-    NO_SANDBOX && '--no-sandbox',
+    '--no-sandbox',
     '--disable-gpu',
     '--headless',
     '--remote-debugging-port=0',
