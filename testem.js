@@ -2,6 +2,20 @@ const report_file = process.env.BUILD_STAGINGDIRECTORY
   ? process.env.BUILD_STAGINGDIRECTORY + '/test-results/results.xml'
   : 'test-results.xml';
 
+const NO_SANDBOX = process.env.TRAVIS || process.env.TS_BUILD;
+
+const CHROME_ARGS = {
+  mode: 'ci',
+  args: [
+    // --no-sandbox is needed when running Chrome inside a container
+    NO_SANDBOX && '--no-sandbox',
+    '--disable-gpu',
+    '--headless',
+    '--remote-debugging-port=0',
+    '--window-size=1440,900',
+  ].filter(Boolean),
+};
+
 module.exports = {
   test_page: 'tests/index.html?hidepassed',
   disable_watching: true,
@@ -12,16 +26,7 @@ module.exports = {
   reporter: 'xunit',
   report_file,
   browser_args: {
-    Chrome: {
-      mode: 'ci',
-      args: [
-        // --no-sandbox is needed when running Chrome inside a container
-        '--no-sandbox',
-        '--disable-gpu',
-        '--headless',
-        '--remote-debugging-port=0',
-        '--window-size=1440,900',
-      ].filter(Boolean),
-    },
+    Chrome: CHROME_ARGS,
+    Chromium: CHROME_ARGS,
   },
 };
