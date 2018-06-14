@@ -3,6 +3,9 @@ module.exports = {
   disable_watching: true,
   launch_in_ci: ['Chrome'],
   launch_in_dev: ['Chrome'],
+  xunit_intermediate_output: true,
+  reporter: 'xunit',
+  report_file: 'test-results.xml',
   browser_args: {
     Chrome: {
       mode: 'ci',
