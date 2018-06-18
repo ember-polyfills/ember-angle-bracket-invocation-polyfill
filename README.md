@@ -12,6 +12,8 @@ know and love, no longer surrounded by mustaches. \o/
 ember install ember-angle-bracket-invocation-polyfill
 ```
 
+You will additionally need to ensure ember-cli-htmlbars-inline-precompile is at least version 1.0.3.
+
 ## Usage
 
 The best usage guide is [the RFC itself](https://github.com/emberjs/rfcs/blob/master/text/0311-angle-bracket-invocation.md),
