@@ -5,7 +5,7 @@
   "keywords": [
     "ember-addon"
   ],
-  "repository": "",
+  "repository": "https://github.com/rwjblue/ember-angle-bracket-invocation-polyfill",
   "license": "MIT",
   "author": "",
   "directories": {
