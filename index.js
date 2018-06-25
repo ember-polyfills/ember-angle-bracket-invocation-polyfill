@@ -12,6 +12,16 @@ module.exports = {
     let emberVersion = checker.forEmber();
 
     this.shouldPolyfill = emberVersion.lt('3.4.0-alpha.1');
+
+    let parentChecker = new VersionChecker(this.parent);
+    let precompileVersion = parentChecker.for('ember-cli-htmlbars-inline-precompile');
+
+    if (precompileVersion.exists() && precompileVersion.lt('1.0.3')) {
+      this.ui.writeWarnLine(
+        'Detected a version of ember-cli-htmlbars-inline-precompile that does not' +
+          ' support angle bracket invocation, please update to at least 1.0.3.'
+      );
+    }
   },
 
   setupPreprocessorRegistry(type, registry) {
