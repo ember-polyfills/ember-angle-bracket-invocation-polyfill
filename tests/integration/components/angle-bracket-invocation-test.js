@@ -318,5 +318,16 @@ module('Integration | Component | angle-bracket-invocation', function(hooks) {
 
       assert.dom('span[data-test-my-thing]').hasText('hi martin!');
     });
+
+    test('passing into element - unused', async function(assert) {
+      this.owner.register(
+        'template:components/foo-bar',
+        hbs`<span ...attributes>hi martin!</span>`
+      );
+
+      await render(hbs`<FooBar />`);
+
+      assert.dom('span').hasText('hi martin!');
+    });
   });
 });

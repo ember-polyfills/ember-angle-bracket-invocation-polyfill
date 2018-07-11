@@ -104,7 +104,7 @@ import { lte, gte } from 'ember-compatibility-helpers';
               let { positional } = args.capture();
               let invocationAttributesReference = positional.at(0);
               let invocationAttributes = invocationAttributesReference.value();
-              let attributeNames = Object.keys(invocationAttributes);
+              let attributeNames = invocationAttributes ? Object.keys(invocationAttributes) : [];
               let dynamicAttributes = {};
 
               for (let i = 0; i < attributeNames.length; i++) {
@@ -235,7 +235,7 @@ import { lte, gte } from 'ember-compatibility-helpers';
               let positional = gte('2.15.0-beta.1') ? args.capture().positional : args.positional;
               let invocationAttributesReference = positional.at(0);
               let invocationAttributes = invocationAttributesReference.value();
-              let attributeNames = Object.keys(invocationAttributes);
+              let attributeNames = invocationAttributes ? Object.keys(invocationAttributes) : [];
               let dynamicAttributes = {};
 
               for (let i = 0; i < attributeNames.length; i++) {
