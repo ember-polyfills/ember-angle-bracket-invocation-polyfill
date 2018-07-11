@@ -318,5 +318,17 @@ module('Integration | Component | angle-bracket-invocation', function(hooks) {
 
       assert.dom('span[data-test-my-thing]').hasText('hi martin!');
     });
+
+    test('merge class names', async function(assert) {
+      this.owner.register(
+        'template:components/foo-bar',
+        hbs`<span class="original" ...attributes></span>`
+      );
+
+      await render(hbs`<FooBar class="new" />`);
+
+      assert.dom('span').hasClass('original');
+      assert.dom('span').hasClass('new');
+    });
   });
 });
