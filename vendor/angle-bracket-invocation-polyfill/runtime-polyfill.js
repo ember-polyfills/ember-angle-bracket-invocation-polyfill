@@ -95,6 +95,7 @@ import { lte, gte } from 'ember-compatibility-helpers';
             }
           }
 
+          runtimeResolver.builtInModifiers = Ember.assign({}, runtimeResolver.builtInModifiers);
           runtimeResolver.builtInModifiers._splattributes = {
             create(element, args, scope, dom) {
               let environment = owner.lookup('service:-glimmer-environment');
