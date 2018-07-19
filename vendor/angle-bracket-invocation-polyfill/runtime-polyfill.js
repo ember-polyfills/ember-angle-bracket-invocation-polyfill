@@ -157,13 +157,19 @@ import { lte, gte } from 'ember-compatibility-helpers';
 
           // setup our custom attribute bindings directly from the references passed in
           let ORIGINAL_LOOKUP_COMPONENT_DEFINITION = runtimeResolver._lookupComponentDefinition;
-          let installedCustomDidCreateElement = false;
+          let manager = null;
           runtimeResolver._lookupComponentDefinition = function() {
             // call the original implementation
             let definition = ORIGINAL_LOOKUP_COMPONENT_DEFINITION.apply(this, arguments);
 
-            if (!installedCustomDidCreateElement && definition) {
-              let { manager } = definition;
+            if (definition && manager) {
+              definition.manager = manager;
+              return definition;
+            }
+
+            if (definition) {
+              let Manager = definition.manager.constructor;
+              manager = definition.manager = new Manager();
 
               let ORIGINAL_DID_CREATE_ELEMENT = manager.didCreateElement;
               manager.didCreateElement = function(bucket, element, operations) {
@@ -178,8 +184,6 @@ import { lte, gte } from 'ember-compatibility-helpers';
                   }
                 }
               };
-
-              installedCustomDidCreateElement = true;
             }
 
             return definition;
