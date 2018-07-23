@@ -19,6 +19,12 @@ module('Integration | Component | angle-bracket-invocation', function(hooks) {
       assert.dom().hasText('my-helper');
     });
 
+    test('does not error when using with synthetic elements (GH#31)', async function(assert) {
+      await render(hbs`{{fa-icon "camera"}}`);
+
+      assert.dom('i').hasClass('fa-camera');
+    });
+
     test('invoke without block', async function(assert) {
       this.owner.register('template:components/foo-bar', hbs`hi martin!`);
 
