@@ -25,6 +25,14 @@ module('Integration | Component | angle-bracket-invocation', function(hooks) {
       assert.dom('i').hasClass('fa-camera');
     });
 
+    test('single word components', async function(assert) {
+      this.owner.register('template:components/foo', hbs`hi martin!`);
+
+      await render(hbs`<Foo />`);
+
+      assert.dom().hasText('hi martin!');
+    });
+
     test('invoke without block', async function(assert) {
       this.owner.register('template:components/foo-bar', hbs`hi martin!`);
 
