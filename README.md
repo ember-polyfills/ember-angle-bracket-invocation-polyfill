@@ -110,16 +110,19 @@ but here are a few examples of "before"/"after" to whet your appetite:
 ```
 
 - Supports passing `...attributes` into tagless components
+- Supports invoking single word components:
+
+```hbs
+<Title />
+```
+
 - Completely innert when running Ember 3.4 or higher
 - Supports Ember 2.12, 2.16, 2.18, 3.1, 3.2, 3.3
 - Test all the features listed above 😘
 
 ## Limitations
 
-Not all features described in the RFC are polyfilled.
-This addon does not support the following features:
-
-- Single word component names
+There are no known limitations, all features described in the RFC are polyfilled.
 
 ## Contributing
 
