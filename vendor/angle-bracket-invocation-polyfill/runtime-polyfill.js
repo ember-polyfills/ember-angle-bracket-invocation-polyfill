@@ -63,6 +63,21 @@ import { lte, gte } from 'ember-compatibility-helpers';
           : P`template-options:main`;
         let TemplateCompiler = registry.resolve(compilerName);
 
+        registry.register(
+          'component-lookup:main',
+          Ember.Object.extend({
+            componentFor(name, owner, options) {
+              let fullName = `component:${name}`;
+              return owner.factoryFor(fullName, options);
+            },
+
+            layoutFor(name, owner, options) {
+              let templateFullName = `template:components/${name}`;
+              return owner.lookup(templateFullName, options);
+            },
+          })
+        );
+
         let originalCreate = TemplateCompiler.create;
         TemplateCompiler.create = function(options) {
           let owner = getOwner(options);
@@ -201,6 +216,25 @@ import { lte, gte } from 'ember-compatibility-helpers';
       buildRegistry() {
         let registry = this._super(...arguments);
 
+        let factoryForMethodName = 'factoryFor';
+        if (lte('2.13.99999999')) {
+          factoryForMethodName = Ember.__loader.require('container').FACTORY_FOR;
+        }
+
+        registry.register(
+          'component-lookup:main',
+          Ember.Object.extend({
+            componentFor(name, owner, options) {
+              let fullName = `component:${name}`;
+              return owner[factoryForMethodName](fullName, options);
+            },
+
+            layoutFor(name, owner, options) {
+              let templateFullName = `template:components/${name}`;
+              return owner.lookup(templateFullName, options);
+            },
+          })
+        );
         let Environment = registry.resolve('service:-glimmer-environment');
         let ORIGINAL_ENVIRONMENT_CREATE = Environment.create;
         Environment.create = function() {
