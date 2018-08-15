@@ -36,9 +36,9 @@ but here are a few examples of "before"/"after" to whet your appetite:
 ```hbs
 <SiteHeader @user={{this.user}} class={{if this.user.isAdmin "admin"}} />
 
-<SuperSelect @selected={{this.user.country}} as |Option|>
+<SuperSelect @selected={{this.user.country}} as |s|>
   {{#each this.availableCountries as |country|}}
-    <Option @value={{country}}>{{country.name}}</Option>
+    <s.option @value={{country}}>{{country.name}}</s.option>
   {{/each}}
 </SuperSelect>
 ```
