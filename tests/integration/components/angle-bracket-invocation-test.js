@@ -33,6 +33,13 @@ module('Integration | Component | angle-bracket-invocation', function(hooks) {
       assert.dom().hasText('hi martin!');
     });
 
+    test('multiline component invocation using windows line endings without spaces after open element (GH#40)', async function(assert) {
+      this.owner.register('template:components/foo', hbs`hi martin!`);
+
+      await render(hbs`<Foo\r\n  @blah="thing"\r\n></Foo>`);
+      assert.dom().hasText('hi martin!');
+    });
+
     test('invoke without block', async function(assert) {
       this.owner.register('template:components/foo-bar', hbs`hi martin!`);
 
