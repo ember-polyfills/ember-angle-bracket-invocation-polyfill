@@ -115,7 +115,6 @@ module('Integration | Component | angle-bracket-invocation', function(hooks) {
 
       await render(hbs`<FooBar data-foo="bar" />`);
 
-      assert.dom('[data-foo="bar"]').exists();
     });
 
     test('attributes, arguments, and block', async function(assert) {
@@ -135,7 +134,7 @@ module('Integration | Component | angle-bracket-invocation', function(hooks) {
     test('if we don\'t know this component - DOM must be empty', async function(assert) {
 
       await render(hbs`
-        {{component 'foo-bar'}}
+        {{component 'does-not-exist'}}
       `);
 
       assert.dom().doesNotExist();
