@@ -131,6 +131,14 @@ module('Integration | Component | angle-bracket-invocation', function(hooks) {
   });
 
   module('dynamic component support', function() {
+    test("if we don't know this component - DOM must be empty", async function(assert) {
+      await render(hbs`
+        {{component 'does-not-exist'}}
+      `);
+
+      assert.dom().doesNotExist();
+    });
+
     test('invoke dynamic - local, self-closing', async function(assert) {
       this.owner.register('template:components/foo-bar', hbs`hi rwjblue!`);
 
