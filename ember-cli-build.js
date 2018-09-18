@@ -4,7 +4,10 @@ const EmberAddon = require('ember-cli/lib/broccoli/ember-addon');
 
 module.exports = function(defaults) {
   let app = new EmberAddon(defaults, {
-    // Add options here
+    // This can be uncommented when babel parallelization works for ember-font-awesome
+    /* 'ember-cli-babel': {
+      throwUnlessParallelizable: true,
+    }, */
   });
 
   /*
