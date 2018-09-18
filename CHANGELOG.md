@@ -1,5 +1,21 @@
 # Changelog
 
+## v1.2.3 (2018-09-18)
+
+#### :rocket: Enhancement
+* [#42](https://github.com/rwjblue/ember-angle-bracket-invocation-polyfill/pull/42) Add CHANGELOG file based on `lerna-changelog` ([@Turbo87](https://github.com/Turbo87))
+
+#### :bug: Bug Fix
+* [#45](https://github.com/rwjblue/ember-angle-bracket-invocation-polyfill/pull/45) Fix for parallel babel ([@arthirm](https://github.com/arthirm))
+
+#### :memo: Documentation
+* [#38](https://github.com/rwjblue/ember-angle-bracket-invocation-polyfill/pull/38) update confusing usage example in readme ([@jelhan](https://github.com/jelhan))
+
+#### Committers: 3
+- Arthi ([@arthirm](https://github.com/arthirm))
+- Tobias Bieniek ([@Turbo87](https://github.com/Turbo87))
+- jelhan ([@jelhan](https://github.com/jelhan))
+
 ## v1.2.1 (2018-08-29)
 
 #### :bug: Bug Fix
