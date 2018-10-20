@@ -1,4 +1,4 @@
-import { module, test } from 'qunit';
+import { module, test, skip } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
 import { render } from '@ember/test-helpers';
 import hbs from 'htmlbars-inline-precompile';
@@ -350,5 +350,21 @@ module('Integration | Component | angle-bracket-invocation', function(hooks) {
 
       assert.dom('span').hasText('hi martin!');
     });
+  });
+
+  skip('helpers take precedence over properties', async function(assert) {
+    this.owner.register('helper:changeset', buildHelper(() => 'changeset helper'));
+    this.owner.register('template:components/foo', hbs`{{@myArg}}`);
+    this.set('changeset', 'My Changeset Property');
+
+    await render(hbs`<Foo @myArg={{changeset}} />`);
+
+    assert
+      .dom()
+      .hasText('changeset helper', 'should render helper instead of property of same name');
+
+    await render(hbs`<Foo @myArg={{this.changeset}} />`);
+
+    assert.dom().hasText('My Changeset Property', 'using this. disambiguates');
   });
 });
