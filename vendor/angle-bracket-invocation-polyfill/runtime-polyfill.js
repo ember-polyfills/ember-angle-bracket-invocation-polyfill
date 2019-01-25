@@ -321,8 +321,7 @@ import { lte, gte } from 'ember-compatibility-helpers';
                 }
               },
 
-              getDestructor() {
-              },
+              getDestructor() {},
             };
 
             let originalGetComponentDefinition = environment.getComponentDefinition;
