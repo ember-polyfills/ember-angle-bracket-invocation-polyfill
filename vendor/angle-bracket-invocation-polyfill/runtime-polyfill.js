@@ -237,133 +237,137 @@ import { lte, gte } from 'ember-compatibility-helpers';
         );
         let Environment = registry.resolve('service:-glimmer-environment');
         let ORIGINAL_ENVIRONMENT_CREATE = Environment.create;
-        Environment.create = function() {
-          let environment = ORIGINAL_ENVIRONMENT_CREATE.apply(this, arguments);
-          let installedCustomDidCreateElement = false;
+        if (!Environment.create.__IS_ANGLE_BRACKET_PATCHED__) {
+          Environment.create = function() {
+            let environment = ORIGINAL_ENVIRONMENT_CREATE.apply(this, arguments);
+            let installedCustomDidCreateElement = false;
 
-          environment.builtInHelpers['-merge-refs'] = mergeRefsHelper;
+            environment.builtInHelpers['-merge-refs'] = mergeRefsHelper;
 
-          class AttributeTracker {
-            constructor(element, attributeName, reference) {
-              this._element = element;
-              this._attribute = environment.attributeFor(element, attributeName, false);
-              this._reference = reference;
-              this.tag = reference.tag;
-              this.lastRevision = this.tag.value();
-            }
-
-            set() {
-              this._attribute.setAttribute(environment, this._element, this._reference.value());
-              this.lastRevision = this.tag.value();
-            }
-
-            update() {
-              if (!this.tag.validate(this.lastRevision)) {
-                this._attribute.updateAttribute(
-                  environment,
-                  this._element,
-                  this._reference.value()
-                );
+            class AttributeTracker {
+              constructor(element, attributeName, reference) {
+                this._element = element;
+                this._attribute = environment.attributeFor(element, attributeName, false);
+                this._reference = reference;
+                this.tag = reference.tag;
                 this.lastRevision = this.tag.value();
               }
+
+              set() {
+                this._attribute.setAttribute(environment, this._element, this._reference.value());
+                this.lastRevision = this.tag.value();
+              }
+
+              update() {
+                if (!this.tag.validate(this.lastRevision)) {
+                  this._attribute.updateAttribute(
+                    environment,
+                    this._element,
+                    this._reference.value()
+                  );
+                  this.lastRevision = this.tag.value();
+                }
+              }
             }
-          }
 
-          environment.builtInModifiers._splattributes = {
-            create(element, args, scope, dom) {
-              let positional = gte('2.15.0-beta.1') ? args.capture().positional : args.positional;
-              let invocationAttributesReference = positional.at(0);
-              let invocationAttributes = invocationAttributesReference.value();
-              let attributeNames = invocationAttributes ? Object.keys(invocationAttributes) : [];
-              let dynamicAttributes = {};
+            environment.builtInModifiers._splattributes = {
+              create(element, args, scope, dom) {
+                let positional = gte('2.15.0-beta.1') ? args.capture().positional : args.positional;
+                let invocationAttributesReference = positional.at(0);
+                let invocationAttributes = invocationAttributesReference.value();
+                let attributeNames = invocationAttributes ? Object.keys(invocationAttributes) : [];
+                let dynamicAttributes = {};
 
-              for (let i = 0; i < attributeNames.length; i++) {
-                let attributeName = attributeNames[i];
-                dynamicAttributes[attributeName] = new AttributeTracker(
-                  element,
-                  attributeName,
-                  invocationAttributes[attributeName]
-                );
-              }
-
-              return {
-                invocationAttributes,
-                dynamicAttributes,
-                dom,
-                environment,
-              };
-            },
-
-            getTag({ invocationAttributes }) {
-              let referencesArray = [];
-              for (let reference in invocationAttributes) {
-                referencesArray.push(invocationAttributes[reference]);
-              }
-              return combineTagged(referencesArray);
-            },
-
-            install(bucket) {
-              let { dynamicAttributes } = bucket;
-
-              for (let name in dynamicAttributes) {
-                let attribute = dynamicAttributes[name];
-                attribute.set();
-              }
-            },
-
-            update(bucket) {
-              let { dynamicAttributes } = bucket;
-
-              for (let name in dynamicAttributes) {
-                let attribute = dynamicAttributes[name];
-                attribute.update();
-              }
-            },
-
-            getDestructor() {},
-          };
-
-          let originalGetComponentDefinition = environment.getComponentDefinition;
-          environment.getComponentDefinition = function() {
-            let definition = originalGetComponentDefinition.apply(this, arguments);
-
-            if (!installedCustomDidCreateElement && definition) {
-              installedCustomDidCreateElement = true;
-
-              let { manager } = definition;
-
-              let ORIGINAL_DID_CREATE_ELEMENT = manager.didCreateElement;
-              manager.didCreateElement = function(bucket, element, operations) {
-                ORIGINAL_DID_CREATE_ELEMENT.apply(this, arguments);
-                let { args } = bucket;
-
-                if (lte('2.15.0-beta.1')) {
-                  args = args.namedArgs;
+                for (let i = 0; i < attributeNames.length; i++) {
+                  let attributeName = attributeNames[i];
+                  dynamicAttributes[attributeName] = new AttributeTracker(
+                    element,
+                    attributeName,
+                    invocationAttributes[attributeName]
+                  );
                 }
 
-                // on < 2.15 `namedArgs` is only present when there were arguments
-                if (args && args.has('__ANGLE_ATTRS__')) {
-                  let attributeReferences = args.get('__ANGLE_ATTRS__').value();
-                  for (let attributeName in attributeReferences) {
-                    let attributeReference = attributeReferences[attributeName];
+                return {
+                  invocationAttributes,
+                  dynamicAttributes,
+                  dom,
+                  environment,
+                };
+              },
 
-                    operations.addDynamicAttribute(
-                      element,
-                      attributeName,
-                      attributeReference,
-                      false,
-                      null
-                    );
+              getTag({ invocationAttributes }) {
+                let referencesArray = [];
+                for (let reference in invocationAttributes) {
+                  referencesArray.push(invocationAttributes[reference]);
+                }
+                return combineTagged(referencesArray);
+              },
+
+              install(bucket) {
+                let { dynamicAttributes } = bucket;
+
+                for (let name in dynamicAttributes) {
+                  let attribute = dynamicAttributes[name];
+                  attribute.set();
+                }
+              },
+
+              update(bucket) {
+                let { dynamicAttributes } = bucket;
+
+                for (let name in dynamicAttributes) {
+                  let attribute = dynamicAttributes[name];
+                  attribute.update();
+                }
+              },
+
+              getDestructor() {
+              },
+            };
+
+            let originalGetComponentDefinition = environment.getComponentDefinition;
+            environment.getComponentDefinition = function() {
+              let definition = originalGetComponentDefinition.apply(this, arguments);
+
+              if (!installedCustomDidCreateElement && definition) {
+                installedCustomDidCreateElement = true;
+
+                let { manager } = definition;
+
+                let ORIGINAL_DID_CREATE_ELEMENT = manager.didCreateElement;
+                manager.didCreateElement = function(bucket, element, operations) {
+                  ORIGINAL_DID_CREATE_ELEMENT.apply(this, arguments);
+                  let { args } = bucket;
+
+                  if (lte('2.15.0-beta.1')) {
+                    args = args.namedArgs;
                   }
-                }
-              };
-            }
 
-            return definition;
+                  // on < 2.15 `namedArgs` is only present when there were arguments
+                  if (args && args.has('__ANGLE_ATTRS__')) {
+                    let attributeReferences = args.get('__ANGLE_ATTRS__').value();
+                    for (let attributeName in attributeReferences) {
+                      let attributeReference = attributeReferences[attributeName];
+
+                      operations.addDynamicAttribute(
+                        element,
+                        attributeName,
+                        attributeReference,
+                        false,
+                        null
+                      );
+                    }
+                  }
+                };
+              }
+
+              return definition;
+            };
+
+            return environment;
           };
-
-          return environment;
-        };
+          Environment.create.__IS_ANGLE_BRACKET_PATCHED__ = true;
+        }
 
         return registry;
       },
