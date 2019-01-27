@@ -1,5 +1,21 @@
 # Changelog
 
+## v1.2.4 (2019-01-27)
+
+#### :bug: Bug Fix
+* [#55](https://github.com/rwjblue/ember-angle-bracket-invocation-polyfill/pull/55) Fix for max call stack size exceeded when runing many tests ([@thousand](https://github.com/thousand))
+
+#### :memo: Documentation
+* [#46](https://github.com/rwjblue/ember-angle-bracket-invocation-polyfill/pull/46) Update Changelog ([@Turbo87](https://github.com/Turbo87))
+
+#### :house: Internal
+* [#54](https://github.com/rwjblue/ember-angle-bracket-invocation-polyfill/pull/54) TravisCI: Remove deprecated `sudo: false` option ([@Turbo87](https://github.com/Turbo87))
+
+#### Committers: 2
+- Bryan Levay ([@thousand](https://github.com/thousand))
+- Tobias Bieniek ([@Turbo87](https://github.com/Turbo87))
+
+
 ## v1.2.3 (2018-09-18)
 
 #### :rocket: Enhancement
