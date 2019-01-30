@@ -1,6 +1,6 @@
 {
   "name": "ember-angle-bracket-invocation-polyfill",
-  "version": "1.1.5",
+  "version": "1.2.4",
   "description": "The default blueprint for ember-cli addons.",
   "keywords": [
     "ember-addon"
@@ -14,15 +14,16 @@
   },
   "scripts": {
     "build": "ember build",
+    "changelog": "lerna-changelog",
     "lint:js": "eslint .",
     "start": "ember serve",
     "test": "ember test",
     "test:all": "ember try:each"
   },
   "dependencies": {
-    "ember-cli-babel": "^6.6.0",
+    "ember-cli-babel": "^6.17.0",
     "ember-cli-version-checker": "^2.1.2",
-    "ember-compatibility-helpers": "^1.0.0"
+    "ember-compatibility-helpers": "^1.0.2"
   },
   "devDependencies": {
     "broccoli-asset-rev": "^2.7.0",
@@ -39,6 +40,7 @@
     "ember-cli-uglify": "^2.0.0",
     "ember-disable-prototype-extensions": "^1.1.2",
     "ember-export-application-global": "^2.0.0",
+    "ember-font-awesome": "^4.0.0-rc.4",
     "ember-load-initializers": "^1.1.0",
     "ember-maybe-import-regenerator": "^0.1.6",
     "ember-named-arguments-polyfill": "^1.0.0",
@@ -50,6 +52,7 @@
     "eslint-plugin-ember": "^5.0.0",
     "eslint-plugin-node": "^6.0.1",
     "eslint-plugin-prettier": "^2.6.0",
+    "lerna-changelog": "^0.8.0",
     "loader.js": "^4.2.3",
     "prettier": "^1.13.4",
     "qunit-dom": "^0.6.2"
