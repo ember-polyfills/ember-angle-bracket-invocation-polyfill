@@ -1,6 +1,6 @@
 {
   "name": "ember-angle-bracket-invocation-polyfill",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "The default blueprint for ember-cli addons.",
   "keywords": [
     "ember-addon"
