@@ -1,4 +1,4 @@
-import { module, test, skip } from 'qunit';
+import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
 import { render, settled } from '@ember/test-helpers';
 import hbs from 'htmlbars-inline-precompile';
@@ -6,6 +6,7 @@ import hbs from 'htmlbars-inline-precompile';
 import Service, { inject as injectService } from '@ember/service';
 import { helper as buildHelper } from '@ember/component/helper';
 import Component from '@ember/component';
+import hasEmberVersion from 'ember-test-helpers/has-ember-version';
 
 module('Integration | Component | angle-bracket-invocation', function(hooks) {
   setupRenderingTest(hooks);
@@ -426,18 +427,19 @@ module('Integration | Component | angle-bracket-invocation', function(hooks) {
     });
 
     // This is broken in actual Ember, see
-    // https://github.com/emberjs/ember.js/pull/17533 We're skipping it here too
-    // because otherwise we get test failures on Ember 3.4+, where our polyfill
-    // is not in use.
-    skip('merges attributes in correct priority', async function(assert) {
-      this.owner.register(
-        'template:components/foo-bar',
-        hbs`<span data-left="left-inner" ...attributes data-right="right-inner"></span>`
-      );
-      await render(hbs`<FooBar data-left="left-outer" data-right="right-outer" />`);
+    // https://github.com/emberjs/ember.js/pull/17533. So we only test in
+    // versions where our polyfill is active.
+    if (!hasEmberVersion(3, 4)) {
+      test('merges attributes in correct priority', async function(assert) {
+        this.owner.register(
+          'template:components/foo-bar',
+          hbs`<span data-left="left-inner" ...attributes data-right="right-inner"></span>`
+        );
+        await render(hbs`<FooBar data-left="left-outer" data-right="right-outer" />`);
 
-      assert.dom('span').hasAttribute('data-left', 'left-outer');
-      assert.dom('span').hasAttribute('data-right', 'right-inner');
-    });
+        assert.dom('span').hasAttribute('data-left', 'left-outer');
+        assert.dom('span').hasAttribute('data-right', 'right-inner');
+      });
+    }
   });
 });
