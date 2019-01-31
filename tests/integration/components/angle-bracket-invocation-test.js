@@ -1,6 +1,6 @@
 import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
-import { render } from '@ember/test-helpers';
+import { render, settled } from '@ember/test-helpers';
 import hbs from 'htmlbars-inline-precompile';
 
 import Service, { inject as injectService } from '@ember/service';
@@ -340,16 +340,67 @@ module('Integration | Component | angle-bracket-invocation', function(hooks) {
       assert.dom('span[data-test-my-thing]').hasText('hi martin!');
     });
 
-    test('merge class names', async function(assert) {
+    test('merge class names on element', async function(assert) {
       this.owner.register(
         'template:components/foo-bar',
-        hbs`<span class="original" ...attributes></span>`
+        hbs`<span class={{@inside}} ...attributes></span>`
       );
 
-      await render(hbs`<FooBar class="new" />`);
+      this.outside = 'new';
+      this.inside = 'original';
+      await render(hbs`<FooBar @inside={{this.inside}} class={{this.outside}} />`);
 
       assert.dom('span').hasClass('original');
       assert.dom('span').hasClass('new');
+
+      this.set('outside', undefined);
+      await settled();
+      assert.dom('span').hasClass('original');
+      assert.dom('span').doesNotHaveClass('new');
+
+      this.set('outside', 'OUT');
+      this.set('inside', undefined);
+      await settled();
+      assert.dom('span').hasClass('OUT');
+      assert.dom('span').doesNotHaveClass('new');
+      assert.dom('span').doesNotHaveClass('original');
+
+      this.set('inside', 'IN');
+      await settled();
+      assert.dom('span').hasClass('OUT');
+      assert.dom('span').hasClass('IN');
+    });
+
+    test('merge class names on component', async function(assert) {
+      this.owner.register('template:components/span', hbs`<span ...attributes></span>`);
+      this.owner.register(
+        'template:components/foo-bar',
+        hbs`<Span class={{@inside}} ...attributes></Span>`
+      );
+
+      this.outside = 'new';
+      this.inside = 'original';
+      await render(hbs`<FooBar @inside={{this.inside}} class={{this.outside}} />`);
+
+      assert.dom('span').hasClass('original');
+      assert.dom('span').hasClass('new');
+
+      this.set('outside', undefined);
+      await settled();
+      assert.dom('span').hasClass('original');
+      assert.dom('span').doesNotHaveClass('new');
+
+      this.set('outside', 'OUT');
+      this.set('inside', undefined);
+      await settled();
+      assert.dom('span').hasClass('OUT');
+      assert.dom('span').doesNotHaveClass('new');
+      assert.dom('span').doesNotHaveClass('original');
+
+      this.set('inside', 'IN');
+      await settled();
+      assert.dom('span').hasClass('OUT');
+      assert.dom('span').hasClass('IN');
     });
 
     test('passing into element - unused', async function(assert) {
@@ -361,6 +412,17 @@ module('Integration | Component | angle-bracket-invocation', function(hooks) {
       await render(hbs`<FooBar />`);
 
       assert.dom('span').hasText('hi martin!');
+    });
+
+    test('merges attributes in correct priority', async function(assert) {
+      this.owner.register(
+        'template:components/foo-bar',
+        hbs`<span data-left="left-inner" ...attributes data-right="right-inner"></span>`
+      );
+      await render(hbs`<FooBar data-left="left-outer" data-right="right-outer" />`);
+
+      assert.dom('span').hasAttribute('data-left', 'left-outer');
+      assert.dom('span').hasAttribute('data-right', 'right-inner');
     });
   });
 });
