@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.2.5 (2019-01-31)
+
+#### :bug: Bug Fix
+* [#56](https://github.com/rwjblue/ember-angle-bracket-invocation-polyfill/pull/56) Fix class merging and attribute precedence ([@ef4](https://github.com/ef4))
+
+#### Committers: 1
+- Edward Faulkner ([@ef4](https://github.com/ef4))
+
+
 ## v1.2.4 (2019-01-27)
 
 #### :bug: Bug Fix
