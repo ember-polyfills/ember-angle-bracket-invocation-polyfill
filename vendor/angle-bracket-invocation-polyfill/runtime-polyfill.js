@@ -68,14 +68,17 @@ import { lte, gte } from 'ember-compatibility-helpers';
     let classReferences = [];
     for (let i = 0; i < args.positional.length; i++) {
       let arg = args.positional.at(i);
-      let names = Object.keys(arg.value());
-      for (let i = 0; i < names.length; i++) {
-        let name = names[i];
-        let reference = arg.get(name);
-        if (name === 'class') {
-          classReferences.push(reference);
-        } else {
-          references[name] = reference;
+      let snapshot = arg.value();
+      if (snapshot) {
+        let names = Object.keys(arg.value());
+        for (let i = 0; i < names.length; i++) {
+          let name = names[i];
+          let reference = arg.get(name);
+          if (name === 'class') {
+            classReferences.push(reference);
+          } else {
+            references[name] = reference;
+          }
         }
       }
     }
