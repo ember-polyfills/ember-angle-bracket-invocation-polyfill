@@ -12,7 +12,34 @@ import { lte, gte } from 'ember-compatibility-helpers';
     gte('2.13.0-alpha.1') ? '@glimmer/runtime' : 'glimmer-runtime'
   );
 
-  class WrappedNamedArguments {
+  // This is entirely cribbed from the real ClassListReference in glimmer-vm.
+  class ClassListReference {
+    constructor(list) {
+      this.tag = combineTagged(list);
+      this.list = list;
+    }
+
+    value() {
+      let ret = [];
+      let { list } = this;
+
+      for (let i = 0; i < list.length; i++) {
+        let value = this._normalizeStringValue(list[i].value());
+        if (value) ret.push(value);
+      }
+
+      return ret.length === 0 ? null : ret.join(' ');
+    }
+
+    _normalizeStringValue(value) {
+      if (value === null || value === undefined || typeof value.toString !== 'function') {
+        return '';
+      }
+      return String(value);
+    }
+  }
+
+  class MergedAttributesReference {
     constructor(references) {
       this.references = references;
 
@@ -24,33 +51,44 @@ import { lte, gte } from 'ember-compatibility-helpers';
     }
 
     value() {
-      return this.references;
+      let value = Object.create(null);
+      for (let key in this.references) {
+        value[key] = this.references[key].value();
+      }
+      return value;
+    }
+
+    get(property) {
+      return this.references[property];
     }
   }
 
-  function mergeRefsHelper(_vm, args) {
-    let invocationReferences = args.named.has('invocation') && args.named.get('invocation');
-    let splatReferences = args.named.has('splat') && args.named.get('splat').value();
-
+  function mergeAttributesHelper(_vm, args) {
     let references = {};
-
-    if (invocationReferences) {
-      let names = gte('2.15.0-beta.1') ? invocationReferences.names : invocationReferences.keys;
-      for (let i = 0; i < names.length; i++) {
-        let name = names[i];
-        let reference = invocationReferences.get(name);
-
-        references[name] = reference;
+    let classReferences = [];
+    for (let i = 0; i < args.positional.length; i++) {
+      let arg = args.positional.at(i);
+      let snapshot = arg.value();
+      if (snapshot) {
+        let names = Object.keys(arg.value());
+        for (let i = 0; i < names.length; i++) {
+          let name = names[i];
+          let reference = arg.get(name);
+          if (name === 'class') {
+            classReferences.push(reference);
+          } else {
+            references[name] = reference;
+          }
+        }
       }
     }
-
-    if (splatReferences) {
-      for (let attributeName in splatReferences) {
-        references[attributeName] = splatReferences[attributeName];
-      }
+    if (classReferences.length > 1) {
+      references['class'] = new ClassListReference(classReferences);
+    } else if (classReferences.length > 0) {
+      references['class'] = classReferences[0];
     }
 
-    return new WrappedNamedArguments(references);
+    return new MergedAttributesReference(references);
   }
 
   if (gte('3.1.0-beta.1')) {
@@ -86,7 +124,7 @@ import { lte, gte } from 'ember-compatibility-helpers';
           let runtimeResolver = compileTimeLookup.resolver;
 
           // setup our reference capture system
-          runtimeResolver.builtInHelpers['-merge-refs'] = mergeRefsHelper;
+          runtimeResolver.builtInHelpers['-merge-attrs'] = mergeAttributesHelper;
 
           class AttributeTracker {
             constructor(environment, element, attributeName, reference) {
@@ -122,19 +160,22 @@ import { lte, gte } from 'ember-compatibility-helpers';
               let invocationAttributes = invocationAttributesReference.value();
               let attributeNames = invocationAttributes ? Object.keys(invocationAttributes) : [];
               let dynamicAttributes = {};
+              let references = [];
 
               for (let i = 0; i < attributeNames.length; i++) {
                 let attributeName = attributeNames[i];
+                let ref = invocationAttributesReference.get(attributeName);
                 dynamicAttributes[attributeName] = new AttributeTracker(
                   environment,
                   element,
                   attributeName,
-                  invocationAttributes[attributeName]
+                  ref
                 );
+                references.push(ref);
               }
 
               return {
-                invocationAttributes,
+                references,
                 dynamicAttributes,
                 dom,
                 domBuilder,
@@ -142,12 +183,8 @@ import { lte, gte } from 'ember-compatibility-helpers';
               };
             },
 
-            getTag({ invocationAttributes }) {
-              let referencesArray = [];
-              for (let reference in invocationAttributes) {
-                referencesArray.push(invocationAttributes[reference]);
-              }
-              return combineTagged(referencesArray);
+            getTag({ references }) {
+              return combineTagged(references);
             },
 
             install(bucket) {
@@ -192,10 +229,11 @@ import { lte, gte } from 'ember-compatibility-helpers';
                 ORIGINAL_DID_CREATE_ELEMENT.apply(this, arguments);
                 let { args } = bucket;
                 if (args.has('__ANGLE_ATTRS__')) {
-                  let attributeReferences = args.get('__ANGLE_ATTRS__').value();
-                  for (let attributeName in attributeReferences) {
-                    let attributeReference = attributeReferences[attributeName];
-
+                  let angleAttrs = args.get('__ANGLE_ATTRS__');
+                  // this use of value is OK because the set of keys isn't allowed to change dynamically
+                  let snapshot = angleAttrs.value();
+                  for (let attributeName in snapshot) {
+                    let attributeReference = angleAttrs.get(attributeName);
                     operations.setAttribute(attributeName, attributeReference, false, null);
                   }
                 }
@@ -242,7 +280,7 @@ import { lte, gte } from 'ember-compatibility-helpers';
             let environment = ORIGINAL_ENVIRONMENT_CREATE.apply(this, arguments);
             let installedCustomDidCreateElement = false;
 
-            environment.builtInHelpers['-merge-refs'] = mergeRefsHelper;
+            environment.builtInHelpers['-merge-attrs'] = mergeAttributesHelper;
 
             class AttributeTracker {
               constructor(element, attributeName, reference) {
@@ -277,30 +315,29 @@ import { lte, gte } from 'ember-compatibility-helpers';
                 let invocationAttributes = invocationAttributesReference.value();
                 let attributeNames = invocationAttributes ? Object.keys(invocationAttributes) : [];
                 let dynamicAttributes = {};
+                let references = [];
 
                 for (let i = 0; i < attributeNames.length; i++) {
                   let attributeName = attributeNames[i];
+                  let ref = invocationAttributesReference.get(attributeName);
                   dynamicAttributes[attributeName] = new AttributeTracker(
                     element,
                     attributeName,
-                    invocationAttributes[attributeName]
+                    ref
                   );
+                  references.push(ref);
                 }
 
                 return {
-                  invocationAttributes,
+                  references,
                   dynamicAttributes,
                   dom,
                   environment,
                 };
               },
 
-              getTag({ invocationAttributes }) {
-                let referencesArray = [];
-                for (let reference in invocationAttributes) {
-                  referencesArray.push(invocationAttributes[reference]);
-                }
-                return combineTagged(referencesArray);
+              getTag({ references }) {
+                return combineTagged(references);
               },
 
               install(bucket) {
@@ -344,9 +381,11 @@ import { lte, gte } from 'ember-compatibility-helpers';
 
                   // on < 2.15 `namedArgs` is only present when there were arguments
                   if (args && args.has('__ANGLE_ATTRS__')) {
-                    let attributeReferences = args.get('__ANGLE_ATTRS__').value();
-                    for (let attributeName in attributeReferences) {
-                      let attributeReference = attributeReferences[attributeName];
+                    let attributeReferences = args.get('__ANGLE_ATTRS__');
+                    let names = Object.keys(attributeReferences.value());
+                    for (let i = 0; i < names.length; i++) {
+                      let attributeName = names[i];
+                      let attributeReference = attributeReferences.get(attributeName);
 
                       operations.addDynamicAttribute(
                         element,
