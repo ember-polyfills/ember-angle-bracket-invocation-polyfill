@@ -192,6 +192,16 @@ module('Integration | Component | angle-bracket-invocation', function(hooks) {
       assert.dom('[data-foo="bar"]').exists();
     });
 
+    test('invoke nested path', async function(assert) {
+      this.owner.register('template:components/foo/bar', hbs`hi rwjblue!`);
+
+      await render(hbs`
+        <Foo::Bar data-foo="bar"/>
+      `);
+
+      assert.dom('[data-foo="bar"]').exists();
+    });
+
     test('invoke dynamic - path', async function(assert) {
       this.owner.register('service:elsewhere', Service.extend());
       this.owner.register(
