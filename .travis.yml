@@ -31,6 +31,7 @@ env:
     - EMBER_TRY_SCENARIO=ember-3.2
     - EMBER_TRY_SCENARIO=ember-3.3
     - EMBER_TRY_SCENARIO=ember-lts-3.4
+    - EMBER_TRY_SCENARIO=ember-lts-3.8
     - EMBER_TRY_SCENARIO=ember-release
     - EMBER_TRY_SCENARIO=ember-beta
     - EMBER_TRY_SCENARIO=ember-canary
