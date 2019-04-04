@@ -12,6 +12,7 @@ module.exports = {
     let emberVersion = checker.forEmber();
 
     this.shouldPolyfill = emberVersion.lt('3.4.0-alpha.1');
+    this.shouldPolyfillNested = emberVersion.lt('3.10.0-alpha.1');
 
     let parentChecker = new VersionChecker(this.parent);
     let precompileVersion = parentChecker.for('ember-cli-htmlbars-inline-precompile');
@@ -33,6 +34,14 @@ module.exports = {
         params: {},
       };
       registry.add('htmlbars-ast-plugin', pluginObj);
+    } else if (this.shouldPolyfillNested) {
+      let pluginObj = this._buildNestedPlugin();
+      pluginObj.parallelBabel = {
+        requireFile: __filename,
+        buildUsing: '_buildPlugin',
+        params: {},
+      };
+      registry.add('htmlbars-ast-plugin', pluginObj);
     }
   },
 
@@ -40,6 +49,16 @@ module.exports = {
     return {
       name: 'component-attributes',
       plugin: require('./lib/ast-transform'),
+      baseDir() {
+        return __dirname;
+      },
+    };
+  },
+
+  _buildNestedPlugin() {
+    return {
+      name: 'nested-component-invocation-support',
+      plugin: require('./lib/ast-nested-transform'),
       baseDir() {
         return __dirname;
       },

@@ -1,8 +1,9 @@
 # ember-angle-bracket-invocation-polyfill
 
-This addon provides a polyfill for angle bracket invocation syntax as described in
-[RFC 311](https://github.com/emberjs/rfcs/pull/311). It's the same components you
-know and love, no longer surrounded by mustaches. \o/
+This addon provides a polyfill for angle bracket invocation syntax as described
+in [RFC 311](https://github.com/emberjs/rfcs/pull/311) and [RFC
+457](https://emberjs.github.io/rfcs/0457-nested-lookups.html). It's the same
+components you know and love, no longer surrounded by mustaches. \o/
 
 [![Build Status](https://travis-ci.org/rwjblue/ember-angle-bracket-invocation-polyfill.svg?branch=master)](https://travis-ci.org/rwjblue/ember-angle-bracket-invocation-polyfill)
 
@@ -16,7 +17,9 @@ You will additionally need to ensure ember-cli-htmlbars-inline-precompile is at 
 
 ## Usage
 
-The best usage guide is [the RFC itself](https://github.com/emberjs/rfcs/blob/master/text/0311-angle-bracket-invocation.md),
+The best usage guide are the RFCs themselves
+([emberjs/rfcs#311](https://emberjs.github.io/rfcs/0311-angle-bracket-invocation.html)
+[emberjs/rfcs#457](https://emberjs.github.io/rfcs/0457-nested-lookups.html)),
 but here are a few examples of "before"/"after" to whet your appetite:
 
 **Before**:
@@ -116,8 +119,14 @@ but here are a few examples of "before"/"after" to whet your appetite:
 <Title />
 ```
 
-- Completely innert when running Ember 3.4 or higher
-- Supports Ember 2.12, 2.16, 2.18, 3.1, 3.2, 3.3
+- Supports invoking components nested in subfolders:
+
+```
+<Foo::Bar />
+```
+
+- Completely innert when running Ember 3.10 or higher
+- Supports Ember 2.12, 2.16, 2.18, 3.1, 3.2, 3.3, 3.4, 3.8, 3.9
 - Test all the features listed above 😘
 
 ## Limitations
