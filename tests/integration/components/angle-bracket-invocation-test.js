@@ -129,6 +129,39 @@ module('Integration | Component | angle-bracket-invocation', function(hooks) {
       assert.dom('h2').hasText("rwjblue's component");
       assert.dom('p').hasText('Contents');
     });
+
+    test('nested paths do not conflict with non-nested paths with similar names', async function(assert) {
+      this.owner.register('template:components/foo/bar', hbs`hi rwjblue!`);
+      this.owner.register('template:components/foo-bar', hbs`hi rtablada!`);
+
+      await render(hbs`
+        <Foo::Bar data-foo="bar"/>
+        <FooBar data-foo="baz" />
+      `);
+
+      assert.dom('[data-foo="bar"]').hasText('hi rwjblue!');
+      assert.dom('[data-foo="baz"]').hasText('hi rtablada!');
+    });
+
+    test('invoke nested path', async function(assert) {
+      this.owner.register('template:components/foo/bar', hbs`hi rwjblue!`);
+
+      await render(hbs`
+        <Foo::Bar data-foo="bar"/>
+      `);
+
+      assert.dom('[data-foo="bar"]').exists();
+    });
+
+    test('invoke deeply nested path', async function(assert) {
+      this.owner.register('template:components/foo/bar/baz/qux', hbs`hi rwjblue!`);
+
+      await render(hbs`
+        <Foo::Bar::Baz::Qux data-foo="bar"/>
+      `);
+
+      assert.dom('[data-foo="bar"]').exists();
+    });
   });
 
   module('dynamic component support', function() {
@@ -187,39 +220,6 @@ module('Integration | Component | angle-bracket-invocation', function(hooks) {
         {{#with (component 'foo-bar') as |LolBar|}}
           <LolBar data-foo="bar" />
         {{/with}}
-      `);
-
-      assert.dom('[data-foo="bar"]').exists();
-    });
-
-    test('nested paths do not conflict with non-nested paths with similar names', async function(assert) {
-      this.owner.register('template:components/foo/bar', hbs`hi rwjblue!`);
-      this.owner.register('template:components/foo-bar', hbs`hi rtablada!`);
-
-      await render(hbs`
-        <Foo::Bar data-foo="bar"/>
-        <FooBar data-foo="baz" />
-      `);
-
-      assert.dom('[data-foo="bar"]').hasText('hi rwjblue!');
-      assert.dom('[data-foo="baz"]').hasText('hi rtablada!');
-    });
-
-    test('invoke nested path', async function(assert) {
-      this.owner.register('template:components/foo/bar', hbs`hi rwjblue!`);
-
-      await render(hbs`
-        <Foo::Bar data-foo="bar"/>
-      `);
-
-      assert.dom('[data-foo="bar"]').exists();
-    });
-
-    test('invoke deeply nested path', async function(assert) {
-      this.owner.register('template:components/foo/bar/baz/qux', hbs`hi rwjblue!`);
-
-      await render(hbs`
-        <Foo::Bar::Baz::Qux data-foo="bar"/>
       `);
 
       assert.dom('[data-foo="bar"]').exists();
