@@ -57,7 +57,7 @@ module.exports = {
 
   _buildNestedPlugin() {
     return {
-      name: 'component-attributes',
+      name: 'nested-component-invocation-support',
       plugin: require('./lib/ast-nested-transform'),
       baseDir() {
         return __dirname;
