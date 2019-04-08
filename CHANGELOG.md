@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.3.0 (2019-04-08)
+
+#### :rocket: Enhancement
+* [#59](https://github.com/rwjblue/ember-angle-bracket-invocation-polyfill/pull/59) Add support for nested invocation with `::` ([@rtablada](https://github.com/rtablada))
+
+#### :house: Internal
+* [#60](https://github.com/rwjblue/ember-angle-bracket-invocation-polyfill/pull/60) Add ember-lts-3.8 to CI setup. ([@rwjblue](https://github.com/rwjblue))
+
+#### Committers: 2
+- Robert Jackson ([@rwjblue](https://github.com/rwjblue))
+- Ryan Tablada ([@rtablada](https://github.com/rtablada))
+
 ## v1.2.5 (2019-01-31)
 
 #### :bug: Bug Fix
