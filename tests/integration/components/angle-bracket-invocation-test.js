@@ -8,6 +8,8 @@ import { helper as buildHelper } from '@ember/component/helper';
 import Component from '@ember/component';
 import hasEmberVersion from 'ember-test-helpers/has-ember-version';
 
+const isUsingAngleBracketPolyfill = !hasEmberVersion(3, 4);
+
 module('Integration | Component | angle-bracket-invocation', function(hooks) {
   setupRenderingTest(hooks);
 
@@ -459,10 +461,10 @@ module('Integration | Component | angle-bracket-invocation', function(hooks) {
       assert.dom('span').hasText('hi martin!');
     });
 
-    // This is broken in actual Ember, see
+    // This was broken in Ember until 3.10+, see
     // https://github.com/emberjs/ember.js/pull/17533. So we only test in
-    // versions where our polyfill is active.
-    if (!hasEmberVersion(3, 4)) {
+    // versions where these tests have a chance to pass...
+    if (isUsingAngleBracketPolyfill || hasEmberVersion(3, 10)) {
       test('merges attributes in correct priority', async function(assert) {
         this.owner.register(
           'template:components/foo-bar',
