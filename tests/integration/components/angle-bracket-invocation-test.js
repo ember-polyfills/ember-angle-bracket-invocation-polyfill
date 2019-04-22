@@ -476,5 +476,81 @@ module('Integration | Component | angle-bracket-invocation', function(hooks) {
         assert.dom('span').hasAttribute('data-right', 'right-inner');
       });
     }
+
+    test('attributes are available in didInsertElement and didRender - normal component', async function(assert) {
+      assert.expect(6);
+      this.owner.register(
+        'template:components/foo-bar',
+        hbs`<span data-test-inner ...attributes>hi martin!</span>`
+      );
+      this.owner.register(
+        'component:foo-bar',
+        Component.extend({
+          didInsertElement() {
+            assert.dom('span').hasAttribute('data-test-inner');
+            assert.dom('span').hasAttribute('data-test-outer');
+          },
+          didRender() {
+            assert.dom('span').hasAttribute('data-test-inner');
+            assert.dom('span').hasAttribute('data-test-outer');
+          },
+        })
+      );
+
+      await render(hbs`<FooBar data-test-outer />`);
+
+      assert.dom('span').hasAttribute('data-test-inner');
+      assert.dom('span').hasAttribute('data-test-outer');
+    });
+
+    test('attributes are available in didInsertElement and didRender - tagless component', async function(assert) {
+      assert.expect(6);
+      this.owner.register(
+        'template:components/foo-bar',
+        hbs`<span data-test-inner ...attributes>hi martin!</span>`
+      );
+      this.owner.register(
+        'component:foo-bar',
+        Component.extend({
+          tagName: '',
+          didInsertElement() {
+            assert.dom('span').hasAttribute('data-test-inner');
+            assert.dom('span').hasAttribute('data-test-outer');
+          },
+          didRender() {
+            assert.dom('span').hasAttribute('data-test-inner');
+            assert.dom('span').hasAttribute('data-test-outer');
+          },
+        })
+      );
+
+      await render(hbs`<FooBar data-test-outer />`);
+
+      assert.dom('span').hasAttribute('data-test-inner');
+      assert.dom('span').hasAttribute('data-test-outer');
+    });
+
+    // This is just to confirm the semantics of dIE and dR, that attributes are applied when these hooks are called. See tests above!
+    test('attributes are available in didInsertElement and didRender - curly component', async function(assert) {
+      assert.expect(3);
+      this.owner.register('template:components/foo-bar', hbs`hi martin!`);
+      this.owner.register(
+        'component:foo-bar',
+        Component.extend({
+          tagName: 'span',
+          attributeBindings: ['data-test-outer'],
+          didInsertElement() {
+            assert.dom('span').hasAttribute('data-test-outer');
+          },
+          didRender() {
+            assert.dom('span').hasAttribute('data-test-outer');
+          },
+        })
+      );
+
+      await render(hbs`{{foo-bar data-test-outer=true}}`);
+
+      assert.dom('span').hasAttribute('data-test-outer');
+    });
   });
 });
