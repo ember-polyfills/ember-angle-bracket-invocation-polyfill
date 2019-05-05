@@ -402,6 +402,54 @@ import { lte, gte } from 'ember-compatibility-helpers';
               return definition;
             };
 
+            // process modifiers before components to fix https://github.com/rwjblue/ember-angle-bracket-invocation-polyfill/issues/64
+            function _commit() {
+              let { scheduledInstallManagers, scheduledInstallModifiers } = this;
+
+              for (let i = 0; i < scheduledInstallManagers.length; i++) {
+                let manager = scheduledInstallManagers[i];
+                let modifier = scheduledInstallModifiers[i];
+                manager.install(modifier);
+              }
+
+              let { scheduledUpdateModifierManagers, scheduledUpdateModifiers } = this;
+
+              for (let i = 0; i < scheduledUpdateModifierManagers.length; i++) {
+                let manager = scheduledUpdateModifierManagers[i];
+                let modifier = scheduledUpdateModifiers[i];
+                manager.update(modifier);
+              }
+
+              let { createdComponents, createdManagers } = this;
+
+              for (let i = 0; i < createdComponents.length; i++) {
+                let component = createdComponents[i];
+                let manager = createdManagers[i];
+                manager.didCreate(component);
+              }
+
+              let { updatedComponents, updatedManagers } = this;
+
+              for (let i = 0; i < updatedComponents.length; i++) {
+                let component = updatedComponents[i];
+                let manager = updatedManagers[i];
+                manager.didUpdate(component);
+              }
+
+              let { destructors } = this;
+
+              for (let i = 0; i < destructors.length; i++) {
+                destructors[i].destroy();
+              }
+            }
+
+            environment.commit = function() {
+              let transaction = this.transaction;
+              this._transaction = null;
+
+              _commit.call(transaction);
+            };
+
             return environment;
           };
           Environment.create.__IS_ANGLE_BRACKET_PATCHED__ = true;
