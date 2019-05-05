@@ -353,6 +353,15 @@ module('Integration | Component | angle-bracket-invocation', function(hooks) {
       assert.dom('[data-one="from render"][data-two="from outer"]').hasText('hi martin!');
     });
 
+    test('passing into angle invocation - unused', async function(assert) {
+      this.owner.register('template:components/comp-outer', hbs`<CompInner ...attributes />`);
+      this.owner.register('template:components/comp-inner', hbs`hi martin!`);
+
+      await render(hbs`<CompOuter />`);
+
+      assert.dom('div div').hasText('hi martin!');
+    });
+
     test('passing into element - normal component', async function(assert) {
       this.owner.register(
         'template:components/foo-bar',
