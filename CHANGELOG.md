@@ -1,3 +1,11 @@
+## v1.3.1 (2019-05-08)
+
+#### :bug: Bug Fix
+* [#68](https://github.com/rwjblue/ember-angle-bracket-invocation-polyfill/pull/68) Fix error when using splattributes but no attributes were passed ([@simonihmig](https://github.com/simonihmig))
+
+#### Committers: 1
+- Simon Ihmig ([@simonihmig](https://github.com/simonihmig))
+
 ## v1.3.0 (2019-04-08)
 
 #### :rocket: Enhancement
