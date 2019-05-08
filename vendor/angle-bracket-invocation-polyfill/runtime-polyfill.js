@@ -232,9 +232,11 @@ import { lte, gte } from 'ember-compatibility-helpers';
                   let angleAttrs = args.get('__ANGLE_ATTRS__');
                   // this use of value is OK because the set of keys isn't allowed to change dynamically
                   let snapshot = angleAttrs.value();
-                  for (let attributeName in snapshot) {
-                    let attributeReference = angleAttrs.get(attributeName);
-                    operations.setAttribute(attributeName, attributeReference, false, null);
+                  if (snapshot) {
+                    for (let attributeName in snapshot) {
+                      let attributeReference = angleAttrs.get(attributeName);
+                      operations.setAttribute(attributeName, attributeReference, false, null);
+                    }
                   }
                 }
               };
@@ -382,18 +384,21 @@ import { lte, gte } from 'ember-compatibility-helpers';
                   // on < 2.15 `namedArgs` is only present when there were arguments
                   if (args && args.has('__ANGLE_ATTRS__')) {
                     let attributeReferences = args.get('__ANGLE_ATTRS__');
-                    let names = Object.keys(attributeReferences.value());
-                    for (let i = 0; i < names.length; i++) {
-                      let attributeName = names[i];
-                      let attributeReference = attributeReferences.get(attributeName);
+                    let snapshot = attributeReferences.value();
+                    if (snapshot) {
+                      let names = Object.keys(snapshot);
+                      for (let i = 0; i < names.length; i++) {
+                        let attributeName = names[i];
+                        let attributeReference = attributeReferences.get(attributeName);
 
-                      operations.addDynamicAttribute(
-                        element,
-                        attributeName,
-                        attributeReference,
-                        false,
-                        null
-                      );
+                        operations.addDynamicAttribute(
+                          element,
+                          attributeName,
+                          attributeReference,
+                          false,
+                          null
+                        );
+                      }
                     }
                   }
                 };
