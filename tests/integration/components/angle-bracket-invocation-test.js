@@ -473,7 +473,7 @@ module('Integration | Component | angle-bracket-invocation', function(hooks) {
     // This was broken in Ember until 3.10+, see
     // https://github.com/emberjs/ember.js/pull/17533. So we only test in
     // versions where these tests have a chance to pass...
-    if (isUsingAngleBracketPolyfill || hasEmberVersion(3, 10)) {
+    if (isUsingAngleBracketPolyfill || hasEmberVersion(3, 9)) {
       test('merges attributes in correct priority', async function(assert) {
         this.owner.register(
           'template:components/foo-bar',
