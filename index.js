@@ -13,6 +13,7 @@ module.exports = {
 
     this.shouldPolyfill = emberVersion.lt('3.4.0-alpha.1');
     this.shouldPolyfillNested = emberVersion.lt('3.10.0-alpha.1');
+    this.shouldPolyfillBuiltinComponents = emberVersion.lt('3.10.0-alpha.1');
 
     let parentChecker = new VersionChecker(this.parent);
     let precompileVersion = parentChecker.for('ember-cli-htmlbars-inline-precompile');
@@ -43,6 +44,16 @@ module.exports = {
       };
       registry.add('htmlbars-ast-plugin', pluginObj);
     }
+
+    if (this.shouldPolyfillBuiltinComponents) {
+      let pluginObj = this._buildLinkToPlugin();
+      pluginObj.parallelBabel = {
+        requireFile: __filename,
+        buildUsing: '_buildLinkToPlugin',
+        params: {},
+      };
+      registry.add('htmlbars-ast-plugin', pluginObj);
+    }
   },
 
   _buildPlugin() {
@@ -59,6 +70,16 @@ module.exports = {
     return {
       name: 'nested-component-invocation-support',
       plugin: require('./lib/ast-nested-transform'),
+      baseDir() {
+        return __dirname;
+      },
+    };
+  },
+
+  _buildLinkToPlugin() {
+    return {
+      name: 'link-to-component-invocation-support',
+      plugin: require('./lib/ast-link-to-transform'),
       baseDir() {
         return __dirname;
       },
@@ -91,5 +112,17 @@ module.exports = {
     });
 
     return transpiledVendorTree;
+  },
+
+  treeForAddon() {
+    if (this.shouldPolyfillBuiltinComponents) {
+      return this._super.treeForAddon.apply(this, arguments);
+    }
+  },
+
+  treeForApp() {
+    if (this.shouldPolyfillBuiltinComponents) {
+      return this._super.treeForApp.apply(this, arguments);
+    }
   },
 };
