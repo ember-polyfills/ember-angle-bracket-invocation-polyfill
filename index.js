@@ -46,13 +46,21 @@ module.exports = {
     }
 
     if (this.shouldPolyfillBuiltinComponents) {
-      let pluginObj = this._buildLinkToPlugin();
-      pluginObj.parallelBabel = {
+      let linktoPluginObj = this._buildLinkToPlugin();
+      linktoPluginObj.parallelBabel = {
         requireFile: __filename,
         buildUsing: '_buildLinkToPlugin',
         params: {},
       };
-      registry.add('htmlbars-ast-plugin', pluginObj);
+      registry.add('htmlbars-ast-plugin', linktoPluginObj);
+
+      let inputPluginObj = this._buildInputPlugin();
+      inputPluginObj.parallelBabel = {
+        requireFile: __filename,
+        buildUsing: '_buildInputPlugin',
+        params: {},
+      };
+      registry.add('htmlbars-ast-plugin', inputPluginObj);
     }
   },
 
@@ -80,6 +88,16 @@ module.exports = {
     return {
       name: 'link-to-component-invocation-support',
       plugin: require('./lib/ast-link-to-transform'),
+      baseDir() {
+        return __dirname;
+      },
+    };
+  },
+
+  _buildInputPlugin() {
+    return {
+      name: 'input-component-invocation-support',
+      plugin: require('./lib/ast-input-transform'),
       baseDir() {
         return __dirname;
       },
