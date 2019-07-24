@@ -59,4 +59,16 @@ module('Integration | Component | input', function(hooks) {
     assert.dom('input').hasClass('form-input');
     assert.dom('input').hasAttribute('role', 'searchbox');
   });
+
+  test('it ignores handlebars comments', async function(assert) {
+    await render(hbs`<Input {{! template-lint-disable-tree }} />`);
+
+    assert.dom('input').exists();
+  });
+
+  test('it ignores unknown attributes', async function(assert) {
+    await render(hbs`<Input aria-labelledby="foo" data-test-foo />`);
+
+    assert.dom('input').exists();
+  });
 });

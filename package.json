@@ -23,7 +23,8 @@
   "dependencies": {
     "ember-cli-babel": "^6.17.0",
     "ember-cli-version-checker": "^2.1.2",
-    "ember-compatibility-helpers": "^1.0.2"
+    "ember-compatibility-helpers": "^1.0.2",
+    "silent-error": "^1.1.1"
   },
   "devDependencies": {
     "broccoli-asset-rev": "^2.7.0",
