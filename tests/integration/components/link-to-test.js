@@ -108,4 +108,16 @@ module('Integration | Component | link-to', function(hooks) {
     assert.dom('a').hasAttribute('target', '_blank');
     assert.dom('a').hasText('Link');
   });
+
+  test('it ignores handlebars comments', async function(assert) {
+    await render(hbs`<LinkTo @route="foo" {{! template-lint-disable-tree }} />`);
+
+    assert.dom('a').exists();
+  });
+
+  test('it ignores unknown attributes', async function(assert) {
+    await render(hbs`<LinkTo @route="foo" aria-labelledby="foo" data-test-foo />`);
+
+    assert.dom('a').exists();
+  });
 });
