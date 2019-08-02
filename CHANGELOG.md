@@ -1,3 +1,11 @@
+## v2.0.1 (2019-08-02)
+
+#### :bug: Bug Fix
+* [#79](https://github.com/rwjblue/ember-angle-bracket-invocation-polyfill/pull/79) Fix transform to not touch native <input> ([@simonihmig](https://github.com/simonihmig))
+
+#### Committers: 1
+- Simon Ihmig ([@simonihmig](https://github.com/simonihmig))
+
 ## v2.0.0 (2019-08-02)
 
 #### :boom: Breaking Change
