@@ -1,3 +1,24 @@
+## v2.0.0 (2019-08-02)
+
+#### :boom: Breaking Change
+* [#74](https://github.com/rwjblue/ember-angle-bracket-invocation-polyfill/pull/74) Drop node 6, 9, and 11 support. ([@simonihmig](https://github.com/simonihmig))
+
+#### :rocket: Enhancement
+* [#75](https://github.com/rwjblue/ember-angle-bracket-invocation-polyfill/pull/75) Add polyfill for <Input> and <Textarea> ([@simonihmig](https://github.com/simonihmig))
+* [#72](https://github.com/rwjblue/ember-angle-bracket-invocation-polyfill/pull/72) Add polyfill for angle brackets <LinkTo> ([@simonihmig](https://github.com/simonihmig))
+
+#### :bug: Bug Fix
+* [#77](https://github.com/rwjblue/ember-angle-bracket-invocation-polyfill/pull/77) Ensure unsupported arguments to `<Input>` and `<LinkTo>` issue warnings or errors appropriately ([@simonihmig](https://github.com/simonihmig))
+* [#76](https://github.com/rwjblue/ember-angle-bracket-invocation-polyfill/pull/76) Add assertion for not passing @model and @models to <LinkTo> ([@simonihmig](https://github.com/simonihmig))
+
+#### :house: Internal
+* [#73](https://github.com/rwjblue/ember-angle-bracket-invocation-polyfill/pull/73) Drop ember-cli-eslint in favor of plain eslint ([@simonihmig](https://github.com/simonihmig))
+* [#63](https://github.com/rwjblue/ember-angle-bracket-invocation-polyfill/pull/63) Run class merging test on 3.9.1. ([@rwjblue](https://github.com/rwjblue))
+
+#### Committers: 2
+- Robert Jackson ([@rwjblue](https://github.com/rwjblue))
+- Simon Ihmig ([@simonihmig](https://github.com/simonihmig))
+
 ## v1.3.1 (2019-05-08)
 
 #### :bug: Bug Fix
