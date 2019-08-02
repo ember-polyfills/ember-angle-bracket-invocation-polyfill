@@ -71,4 +71,11 @@ module('Integration | Component | input', function(hooks) {
 
     assert.dom('input').exists();
   });
+
+  test('it passes <input> untouched', async function(assert) {
+    await render(hbs`<input />`);
+
+    assert.dom('input').exists();
+    assert.dom('input').doesNotHaveClass('ember-view');
+  });
 });
