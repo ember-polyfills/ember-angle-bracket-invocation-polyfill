@@ -39,6 +39,26 @@ module('Integration | Component | link-to', function(hooks) {
     assert.dom('a').hasText('Link');
   });
 
+  test('it supports static route with class property', async function(assert) {
+    await render(hbs`
+    {{#with (concat "ma" "in") as |main|}}
+      <LinkTo @route="foo" class={{main}}>Link</LinkTo>
+    {{/with}}
+    `);
+
+    assert.dom('a').hasAttribute('href', '#/foo');
+    assert.dom('a').hasClass('main');
+    assert.dom('a').hasText('Link');
+  });
+
+  test('it supports static route with dynamic class', async function(assert) {
+    await render(hbs`<LinkTo @route="foo" class={{concat "main"}}>Link</LinkTo>`);
+
+    assert.dom('a').hasAttribute('href', '#/foo');
+    assert.dom('a').hasClass('main');
+    assert.dom('a').hasText('Link');
+  });
+
   test('it supports dynamic route', async function(assert) {
     await render(hbs`<LinkTo @route="bar" @model={{this.modelA}} class="main">Link</LinkTo>`);
 
