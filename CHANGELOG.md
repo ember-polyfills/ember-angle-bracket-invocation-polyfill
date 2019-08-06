@@ -1,3 +1,15 @@
+## v2.0.2 (2019-08-06)
+
+#### :bug: Bug Fix
+* [#82](https://github.com/rwjblue/ember-angle-bracket-invocation-polyfill/pull/82) Fix <LinkTo> usage with `class` attribute. ([@Alonski](https://github.com/Alonski))
+
+#### :house: Internal
+* [#84](https://github.com/rwjblue/ember-angle-bracket-invocation-polyfill/pull/84) Refresh `yarn.lock` ([@simonihmig](https://github.com/simonihmig))
+
+#### Committers: 2
+- Alon Bukai ([@Alonski](https://github.com/Alonski))
+- Simon Ihmig ([@simonihmig](https://github.com/simonihmig))
+
 ## v2.0.1 (2019-08-02)
 
 #### :bug: Bug Fix
