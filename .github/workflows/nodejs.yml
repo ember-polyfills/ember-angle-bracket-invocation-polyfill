@@ -50,8 +50,7 @@ jobs:
     - uses: actions/setup-node@v1
       with:
         node-version: 12.x
-    - name: npm install, yarn setup
-    - name: test
+    - name: test ${{ matrix.ember-try-scenario }}
       env:
         EMBER_TRY_SCENARIO: ${{ matrix.ember-try-scenario }}
       run: |
