@@ -30,20 +30,19 @@ jobs:
 
     strategy:
       matrix:
-        ember-try-scenario: [
-          ember-lts-2.12
-          ember-lts-2.16
-          ember-lts-2.18
-          ember-3.1
-          ember-3.2
-          ember-3.3
-          ember-lts-3.4
-          ember-lts-3.8
-          ember-release
-          ember-beta
-          ember-canary
-          ember-default
-        ]
+        ember-try-scenario:
+         - ember-lts-2.12
+         - ember-lts-2.16
+         - ember-lts-2.18
+         - ember-3.1
+         - ember-3.2
+         - ember-3.3
+         - ember-lts-3.4
+         - ember-lts-3.8
+         - ember-release
+         - ember-beta
+         - ember-canary
+         - ember-default
 
     steps:
     - uses: actions/checkout@v1
