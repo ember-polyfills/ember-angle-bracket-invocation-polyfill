@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   test:
-    name: ${{ matrix.os }}
+    name: Tests
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -17,8 +17,49 @@ jobs:
     - uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - name: npm install, build, and test
+    - name: npm install, yarn setup
       run: |
         npm install -g yarn
         yarn install
-        yarn test
+    - name: linting
+      run: |
+        yarn lint:hbs
+        yarn lint:js
+    - name: test
+      run: yarn test
+
+  try-scenarios:
+    name: Ember Try Scenarios
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        ember-try-scenario: [
+          ember-lts-2.12
+          ember-lts-2.16
+          ember-lts-2.18
+          ember-3.1
+          ember-3.2
+          ember-3.3
+          ember-lts-3.4
+          ember-lts-3.8
+          ember-release
+          ember-beta
+          ember-canary
+          ember-default
+        ]
+
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions/setup-node@v1
+      with:
+        node-version: 12.x
+    - name: npm install, yarn setup
+      run: |
+        npm install -g yarn
+        yarn install
+    - name: test
+      env:
+        EMBER_TRY_SCENARIO: ${{ matrix.ember-try-scenario }}
+      run: node_modules/.bin/ember try:one $EMBER_TRY_SCENARIO
