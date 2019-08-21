@@ -9,21 +9,19 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [8.x, 10.x, 12.x]
         os: [ubuntu-latest, windows-latest, macOS-latest]
 
     steps:
     - uses: actions/checkout@v1
     - uses: actions/setup-node@v1
       with:
-        node-version: ${{ matrix.node-version }}
+        node-version: 8.x
     - name: npm install, yarn setup
       run: |
         npm install -g yarn
         yarn install
     - name: linting
       run: |
-        yarn lint:hbs
         yarn lint:js
     - name: test
       run: yarn test
