@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   test:
-    name: Node ${{ matrix.node_version }} + ${{ matrix.os }}
+    name: ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
 
     strategy:
