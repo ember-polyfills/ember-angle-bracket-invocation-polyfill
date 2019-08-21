@@ -24,7 +24,7 @@ jobs:
         yarn test
 
   try-scenarios:
-    name: Ember Try Scenarios
+    name: ${{ matrix.ember-try-scenario }}
 
     runs-on: ubuntu-latest
 
