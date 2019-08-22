@@ -16,12 +16,14 @@ jobs:
     - uses: actions/setup-node@v1
       with:
         node-version: 8.x
-    - name: install, lint, test
-      run: |
-        npm install -g yarn
-        yarn install
-        yarn lint:js
-        yarn test
+    - name: install yarn
+      run: npm install -g yarn
+    - name: install dependencies
+      run: yarn install
+    - name: lint
+      run: yarn lint:js
+    - name: test
+      run: yarn test
 
   try-scenarios:
     name: ${{ matrix.ember-try-scenario }}
