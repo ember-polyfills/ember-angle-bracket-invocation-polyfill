@@ -16,12 +16,14 @@ jobs:
     - uses: actions/setup-node@v1
       with:
         node-version: 8.x
-    - name: install, lint, test
-      run: |
-        npm install -g yarn
-        yarn install
-        yarn lint:js
-        yarn test
+    - name: install yarn
+      run: npm install -g yarn
+    - name: install dependencies
+      run: yarn install
+    - name: lint
+      run: yarn lint:js
+    - name: test
+      run: yarn test
 
   try-scenarios:
     name: ${{ matrix.ember-try-scenario }}
@@ -52,10 +54,11 @@ jobs:
     - uses: actions/setup-node@v1
       with:
         node-version: 12.x
-    - name: test ${{ matrix.ember-try-scenario }}
+    - name: install yarn
+      run: npm install -g yarn
+    - name: install dependencies
+      run: yarn install
+    - name: test
       env:
         EMBER_TRY_SCENARIO: ${{ matrix.ember-try-scenario }}
-      run: |
-        npm install -g yarn
-        yarn install
-        node_modules/.bin/ember try:one $EMBER_TRY_SCENARIO
+      run: node_modules/.bin/ember try:one $EMBER_TRY_SCENARIO
