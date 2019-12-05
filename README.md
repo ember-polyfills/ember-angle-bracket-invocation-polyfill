@@ -125,7 +125,7 @@ but here are a few examples of "before"/"after" to whet your appetite:
 <Foo::Bar />
 ```
 
-- Completely innert when running Ember 3.10 or higher
+- Completely inert when running Ember 3.10 or higher
 - Supports Ember 2.12, 2.16, 2.18, 3.1, 3.2, 3.3, 3.4, 3.8, 3.9
 - Test all the features listed above 😘
 
