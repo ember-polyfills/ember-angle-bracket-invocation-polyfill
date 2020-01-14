@@ -129,6 +129,10 @@ but here are a few examples of "before"/"after" to whet your appetite:
 - Supports Ember 2.12, 2.16, 2.18, 3.1, 3.2, 3.3, 3.4, 3.8, 3.9
 - Test all the features listed above 😘
 
+### Addons
+
+Any addons wanting to use angle bracket components (in either addon/ or addon-test-support/) need to install `ember-angle-bracket-invocation-polyfill` as a dependency.
+
 ## Limitations
 
 There are no known limitations, all features described in the RFC are polyfilled.
