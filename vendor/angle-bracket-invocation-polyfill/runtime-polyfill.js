@@ -4,7 +4,7 @@ import { lte, gte } from 'ember-compatibility-helpers';
 
 (function() {
   const P = Ember.__loader.require('container').privatize;
-  const { Application, Component, computed, getOwner } = Ember;
+  const { Application, Component, Engine, computed, getOwner } = Ember;
   const { combineTagged } = Ember.__loader.require(
     gte('2.13.0-alpha.1') ? '@glimmer/reference' : 'glimmer-reference'
   );
@@ -92,70 +92,227 @@ import { lte, gte } from 'ember-compatibility-helpers';
   }
 
   if (gte('3.1.0-beta.1')) {
-    Application.reopenClass({
-      buildRegistry() {
-        let registry = this._super(...arguments);
+    const buildRegistry = function buildRegistry() {
+      let registry = this._super(...arguments);
 
-        let compilerName = gte('3.2.0-alpha.1')
-          ? P`template-compiler:main`
-          : P`template-options:main`;
-        let TemplateCompiler = registry.resolve(compilerName);
+      let compilerName = gte('3.2.0-alpha.1')
+        ? P`template-compiler:main`
+        : P`template-options:main`;
+      let TemplateCompiler = registry.resolve(compilerName);
 
-        registry.register(
-          'component-lookup:main',
-          Ember.Object.extend({
-            componentFor(name, owner, options) {
-              let fullName = `component:${name}`;
-              return owner.factoryFor(fullName, options);
-            },
+      registry.register(
+        'component-lookup:main',
+        Ember.Object.extend({
+          componentFor(name, owner, options) {
+            let fullName = `component:${name}`;
+            return owner.factoryFor(fullName, options);
+          },
 
-            layoutFor(name, owner, options) {
-              let templateFullName = `template:components/${name}`;
-              return owner.lookup(templateFullName, options);
-            },
-          })
-        );
+          layoutFor(name, owner, options) {
+            let templateFullName = `template:components/${name}`;
+            return owner.lookup(templateFullName, options);
+          },
+        })
+      );
 
-        let originalCreate = TemplateCompiler.create;
-        TemplateCompiler.create = function(options) {
-          let owner = getOwner(options);
-          let compiler = originalCreate(...arguments);
-          let compileTimeLookup = compiler.resolver;
-          let runtimeResolver = compileTimeLookup.resolver;
+      let originalCreate = TemplateCompiler.create;
+      TemplateCompiler.create = function(options) {
+        let owner = getOwner(options);
+        let compiler = originalCreate(...arguments);
+        let compileTimeLookup = compiler.resolver;
+        let runtimeResolver = compileTimeLookup.resolver;
 
-          // setup our reference capture system
-          runtimeResolver.builtInHelpers['-merge-attrs'] = mergeAttributesHelper;
+        // setup our reference capture system
+        runtimeResolver.builtInHelpers['-merge-attrs'] = mergeAttributesHelper;
+
+        class AttributeTracker {
+          constructor(environment, element, attributeName, reference) {
+            this._environment = environment;
+            this._attribute = environment.attributeFor(element, attributeName, false);
+            this._reference = reference;
+            this.tag = reference.tag;
+            this.lastRevision = this.tag.value();
+          }
+
+          set(dom) {
+            this._attribute.set(dom, this._reference.value(), this._environment);
+            this.lastRevision = this.tag.value();
+          }
+
+          update() {
+            if (!this.tag.validate(this.lastRevision)) {
+              this._attribute.update(this._reference.value(), this._environment);
+              this.lastRevision = this.tag.value();
+            }
+          }
+        }
+
+        runtimeResolver.builtInModifiers = Ember.assign({}, runtimeResolver.builtInModifiers);
+        runtimeResolver.builtInModifiers._splattributes = {
+          create(element, args, scope, dom) {
+            let environment = owner.lookup('service:-glimmer-environment');
+            let domBuilder = clientBuilder(environment, {});
+            domBuilder.constructing = element;
+
+            let { positional } = args.capture();
+            let invocationAttributesReference = positional.at(0);
+            let invocationAttributes = invocationAttributesReference.value();
+            let attributeNames = invocationAttributes ? Object.keys(invocationAttributes) : [];
+            let dynamicAttributes = {};
+            let references = [];
+
+            for (let i = 0; i < attributeNames.length; i++) {
+              let attributeName = attributeNames[i];
+              let ref = invocationAttributesReference.get(attributeName);
+              dynamicAttributes[attributeName] = new AttributeTracker(
+                environment,
+                element,
+                attributeName,
+                ref
+              );
+              references.push(ref);
+            }
+
+            return {
+              references,
+              dynamicAttributes,
+              dom,
+              domBuilder,
+              environment,
+            };
+          },
+
+          getTag({ references }) {
+            return combineTagged(references);
+          },
+
+          install(bucket) {
+            let { dynamicAttributes, domBuilder } = bucket;
+
+            for (let name in dynamicAttributes) {
+              let attribute = dynamicAttributes[name];
+              attribute.set(domBuilder);
+            }
+          },
+
+          update(bucket) {
+            let { dynamicAttributes } = bucket;
+
+            for (let name in dynamicAttributes) {
+              let attribute = dynamicAttributes[name];
+              attribute.update();
+            }
+          },
+
+          getDestructor() {},
+        };
+
+        // setup our custom attribute bindings directly from the references passed in
+        let ORIGINAL_LOOKUP_COMPONENT_DEFINITION = runtimeResolver._lookupComponentDefinition;
+        let manager = null;
+        runtimeResolver._lookupComponentDefinition = function() {
+          // call the original implementation
+          let definition = ORIGINAL_LOOKUP_COMPONENT_DEFINITION.apply(this, arguments);
+
+          if (definition && manager) {
+            definition.manager = manager;
+            return definition;
+          }
+
+          if (definition) {
+            let Manager = definition.manager.constructor;
+            manager = definition.manager = new Manager();
+
+            let ORIGINAL_DID_CREATE_ELEMENT = manager.didCreateElement;
+            manager.didCreateElement = function(bucket, element, operations) {
+              ORIGINAL_DID_CREATE_ELEMENT.apply(this, arguments);
+              let { args } = bucket;
+              if (args.has('__ANGLE_ATTRS__')) {
+                let angleAttrs = args.get('__ANGLE_ATTRS__');
+                // this use of value is OK because the set of keys isn't allowed to change dynamically
+                let snapshot = angleAttrs.value();
+                if (snapshot) {
+                  for (let attributeName in snapshot) {
+                    let attributeReference = angleAttrs.get(attributeName);
+                    operations.setAttribute(attributeName, attributeReference, false, null);
+                  }
+                }
+              }
+            };
+          }
+
+          return definition;
+        };
+
+        return compiler;
+      };
+
+      return registry;
+    };
+    for (const PolyfillTarget of [Application, Engine]) {
+      PolyfillTarget.reopenClass({ buildRegistry });
+    }
+  } else if (gte('2.12.0-beta.1')) {
+    const buildRegistry = function buildRegistry() {
+      let registry = this._super(...arguments);
+
+      let factoryForMethodName = 'factoryFor';
+      if (lte('2.13.99999999')) {
+        factoryForMethodName = Ember.__loader.require('container').FACTORY_FOR;
+      }
+
+      registry.register(
+        'component-lookup:main',
+        Ember.Object.extend({
+          componentFor(name, owner, options) {
+            let fullName = `component:${name}`;
+            return owner[factoryForMethodName](fullName, options);
+          },
+
+          layoutFor(name, owner, options) {
+            let templateFullName = `template:components/${name}`;
+            return owner.lookup(templateFullName, options);
+          },
+        })
+      );
+      let Environment = registry.resolve('service:-glimmer-environment');
+      let ORIGINAL_ENVIRONMENT_CREATE = Environment.create;
+      if (!Environment.create.__IS_ANGLE_BRACKET_PATCHED__) {
+        Environment.create = function() {
+          let environment = ORIGINAL_ENVIRONMENT_CREATE.apply(this, arguments);
+          let installedCustomDidCreateElement = false;
+
+          environment.builtInHelpers['-merge-attrs'] = mergeAttributesHelper;
 
           class AttributeTracker {
-            constructor(environment, element, attributeName, reference) {
-              this._environment = environment;
+            constructor(element, attributeName, reference) {
+              this._element = element;
               this._attribute = environment.attributeFor(element, attributeName, false);
               this._reference = reference;
               this.tag = reference.tag;
               this.lastRevision = this.tag.value();
             }
 
-            set(dom) {
-              this._attribute.set(dom, this._reference.value(), this._environment);
+            set() {
+              this._attribute.setAttribute(environment, this._element, this._reference.value());
               this.lastRevision = this.tag.value();
             }
 
             update() {
               if (!this.tag.validate(this.lastRevision)) {
-                this._attribute.update(this._reference.value(), this._environment);
+                this._attribute.updateAttribute(
+                  environment,
+                  this._element,
+                  this._reference.value()
+                );
                 this.lastRevision = this.tag.value();
               }
             }
           }
 
-          runtimeResolver.builtInModifiers = Ember.assign({}, runtimeResolver.builtInModifiers);
-          runtimeResolver.builtInModifiers._splattributes = {
+          environment.builtInModifiers._splattributes = {
             create(element, args, scope, dom) {
-              let environment = owner.lookup('service:-glimmer-environment');
-              let domBuilder = clientBuilder(environment, {});
-              domBuilder.constructing = element;
-
-              let { positional } = args.capture();
+              let positional = gte('2.15.0-beta.1') ? args.capture().positional : args.positional;
               let invocationAttributesReference = positional.at(0);
               let invocationAttributes = invocationAttributesReference.value();
               let attributeNames = invocationAttributes ? Object.keys(invocationAttributes) : [];
@@ -166,7 +323,6 @@ import { lte, gte } from 'ember-compatibility-helpers';
                 let attributeName = attributeNames[i];
                 let ref = invocationAttributesReference.get(attributeName);
                 dynamicAttributes[attributeName] = new AttributeTracker(
-                  environment,
                   element,
                   attributeName,
                   ref
@@ -178,7 +334,6 @@ import { lte, gte } from 'ember-compatibility-helpers';
                 references,
                 dynamicAttributes,
                 dom,
-                domBuilder,
                 environment,
               };
             },
@@ -188,11 +343,11 @@ import { lte, gte } from 'ember-compatibility-helpers';
             },
 
             install(bucket) {
-              let { dynamicAttributes, domBuilder } = bucket;
+              let { dynamicAttributes } = bucket;
 
               for (let name in dynamicAttributes) {
                 let attribute = dynamicAttributes[name];
-                attribute.set(domBuilder);
+                attribute.set();
               }
             },
 
@@ -208,34 +363,41 @@ import { lte, gte } from 'ember-compatibility-helpers';
             getDestructor() {},
           };
 
-          // setup our custom attribute bindings directly from the references passed in
-          let ORIGINAL_LOOKUP_COMPONENT_DEFINITION = runtimeResolver._lookupComponentDefinition;
-          let manager = null;
-          runtimeResolver._lookupComponentDefinition = function() {
-            // call the original implementation
-            let definition = ORIGINAL_LOOKUP_COMPONENT_DEFINITION.apply(this, arguments);
+          let originalGetComponentDefinition = environment.getComponentDefinition;
+          environment.getComponentDefinition = function() {
+            let definition = originalGetComponentDefinition.apply(this, arguments);
 
-            if (definition && manager) {
-              definition.manager = manager;
-              return definition;
-            }
+            if (!installedCustomDidCreateElement && definition) {
+              installedCustomDidCreateElement = true;
 
-            if (definition) {
-              let Manager = definition.manager.constructor;
-              manager = definition.manager = new Manager();
+              let { manager } = definition;
 
               let ORIGINAL_DID_CREATE_ELEMENT = manager.didCreateElement;
               manager.didCreateElement = function(bucket, element, operations) {
                 ORIGINAL_DID_CREATE_ELEMENT.apply(this, arguments);
                 let { args } = bucket;
-                if (args.has('__ANGLE_ATTRS__')) {
-                  let angleAttrs = args.get('__ANGLE_ATTRS__');
-                  // this use of value is OK because the set of keys isn't allowed to change dynamically
-                  let snapshot = angleAttrs.value();
+
+                if (lte('2.15.0-beta.1')) {
+                  args = args.namedArgs;
+                }
+
+                // on < 2.15 `namedArgs` is only present when there were arguments
+                if (args && args.has('__ANGLE_ATTRS__')) {
+                  let attributeReferences = args.get('__ANGLE_ATTRS__');
+                  let snapshot = attributeReferences.value();
                   if (snapshot) {
-                    for (let attributeName in snapshot) {
-                      let attributeReference = angleAttrs.get(attributeName);
-                      operations.setAttribute(attributeName, attributeReference, false, null);
+                    let names = Object.keys(snapshot);
+                    for (let i = 0; i < names.length; i++) {
+                      let attributeName = names[i];
+                      let attributeReference = attributeReferences.get(attributeName);
+
+                      operations.addDynamicAttribute(
+                        element,
+                        attributeName,
+                        attributeReference,
+                        false,
+                        null
+                      );
                     }
                   }
                 }
@@ -245,176 +407,16 @@ import { lte, gte } from 'ember-compatibility-helpers';
             return definition;
           };
 
-          return compiler;
+          return environment;
         };
+        Environment.create.__IS_ANGLE_BRACKET_PATCHED__ = true;
+      }
 
-        return registry;
-      },
-    });
-  } else if (gte('2.12.0-beta.1')) {
-    Application.reopenClass({
-      buildRegistry() {
-        let registry = this._super(...arguments);
-
-        let factoryForMethodName = 'factoryFor';
-        if (lte('2.13.99999999')) {
-          factoryForMethodName = Ember.__loader.require('container').FACTORY_FOR;
-        }
-
-        registry.register(
-          'component-lookup:main',
-          Ember.Object.extend({
-            componentFor(name, owner, options) {
-              let fullName = `component:${name}`;
-              return owner[factoryForMethodName](fullName, options);
-            },
-
-            layoutFor(name, owner, options) {
-              let templateFullName = `template:components/${name}`;
-              return owner.lookup(templateFullName, options);
-            },
-          })
-        );
-        let Environment = registry.resolve('service:-glimmer-environment');
-        let ORIGINAL_ENVIRONMENT_CREATE = Environment.create;
-        if (!Environment.create.__IS_ANGLE_BRACKET_PATCHED__) {
-          Environment.create = function() {
-            let environment = ORIGINAL_ENVIRONMENT_CREATE.apply(this, arguments);
-            let installedCustomDidCreateElement = false;
-
-            environment.builtInHelpers['-merge-attrs'] = mergeAttributesHelper;
-
-            class AttributeTracker {
-              constructor(element, attributeName, reference) {
-                this._element = element;
-                this._attribute = environment.attributeFor(element, attributeName, false);
-                this._reference = reference;
-                this.tag = reference.tag;
-                this.lastRevision = this.tag.value();
-              }
-
-              set() {
-                this._attribute.setAttribute(environment, this._element, this._reference.value());
-                this.lastRevision = this.tag.value();
-              }
-
-              update() {
-                if (!this.tag.validate(this.lastRevision)) {
-                  this._attribute.updateAttribute(
-                    environment,
-                    this._element,
-                    this._reference.value()
-                  );
-                  this.lastRevision = this.tag.value();
-                }
-              }
-            }
-
-            environment.builtInModifiers._splattributes = {
-              create(element, args, scope, dom) {
-                let positional = gte('2.15.0-beta.1') ? args.capture().positional : args.positional;
-                let invocationAttributesReference = positional.at(0);
-                let invocationAttributes = invocationAttributesReference.value();
-                let attributeNames = invocationAttributes ? Object.keys(invocationAttributes) : [];
-                let dynamicAttributes = {};
-                let references = [];
-
-                for (let i = 0; i < attributeNames.length; i++) {
-                  let attributeName = attributeNames[i];
-                  let ref = invocationAttributesReference.get(attributeName);
-                  dynamicAttributes[attributeName] = new AttributeTracker(
-                    element,
-                    attributeName,
-                    ref
-                  );
-                  references.push(ref);
-                }
-
-                return {
-                  references,
-                  dynamicAttributes,
-                  dom,
-                  environment,
-                };
-              },
-
-              getTag({ references }) {
-                return combineTagged(references);
-              },
-
-              install(bucket) {
-                let { dynamicAttributes } = bucket;
-
-                for (let name in dynamicAttributes) {
-                  let attribute = dynamicAttributes[name];
-                  attribute.set();
-                }
-              },
-
-              update(bucket) {
-                let { dynamicAttributes } = bucket;
-
-                for (let name in dynamicAttributes) {
-                  let attribute = dynamicAttributes[name];
-                  attribute.update();
-                }
-              },
-
-              getDestructor() {},
-            };
-
-            let originalGetComponentDefinition = environment.getComponentDefinition;
-            environment.getComponentDefinition = function() {
-              let definition = originalGetComponentDefinition.apply(this, arguments);
-
-              if (!installedCustomDidCreateElement && definition) {
-                installedCustomDidCreateElement = true;
-
-                let { manager } = definition;
-
-                let ORIGINAL_DID_CREATE_ELEMENT = manager.didCreateElement;
-                manager.didCreateElement = function(bucket, element, operations) {
-                  ORIGINAL_DID_CREATE_ELEMENT.apply(this, arguments);
-                  let { args } = bucket;
-
-                  if (lte('2.15.0-beta.1')) {
-                    args = args.namedArgs;
-                  }
-
-                  // on < 2.15 `namedArgs` is only present when there were arguments
-                  if (args && args.has('__ANGLE_ATTRS__')) {
-                    let attributeReferences = args.get('__ANGLE_ATTRS__');
-                    let snapshot = attributeReferences.value();
-                    if (snapshot) {
-                      let names = Object.keys(snapshot);
-                      for (let i = 0; i < names.length; i++) {
-                        let attributeName = names[i];
-                        let attributeReference = attributeReferences.get(attributeName);
-
-                        operations.addDynamicAttribute(
-                          element,
-                          attributeName,
-                          attributeReference,
-                          false,
-                          null
-                        );
-                      }
-                    }
-                  }
-                };
-              }
-
-              return definition;
-            };
-
-            return environment;
-          };
-          Environment.create.__IS_ANGLE_BRACKET_PATCHED__ = true;
-        }
-
-        return registry;
-      },
-    });
+      return registry;
+    };
+    for (const PolyfillTarget of [Application, Engine]) {
+      PolyfillTarget.reopenClass({ buildRegistry });
+    }
   } else {
     // Based heavily on https://github.com/mmun/ember-component-attributes
     Component.reopen({
