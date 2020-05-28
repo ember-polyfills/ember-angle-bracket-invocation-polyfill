@@ -249,9 +249,8 @@ import { lte, gte } from 'ember-compatibility-helpers';
 
       return registry;
     };
-    for (const PolyfillTarget of [Application, Engine]) {
-      PolyfillTarget.reopenClass({ buildRegistry });
-    }
+    Application.reopenClass({ buildRegistry });
+    Engine.reopenClass({ buildRegistry });
   } else if (gte('2.12.0-beta.1')) {
     const buildRegistry = function buildRegistry() {
       let registry = this._super(...arguments);
