@@ -413,9 +413,8 @@ import { lte, gte } from 'ember-compatibility-helpers';
 
       return registry;
     };
-    for (const PolyfillTarget of [Application, Engine]) {
-      PolyfillTarget.reopenClass({ buildRegistry });
-    }
+    Application.reopenClass({ buildRegistry });
+    Engine.reopenClass({ buildRegistry });
   } else {
     // Based heavily on https://github.com/mmun/ember-component-attributes
     Component.reopen({
