@@ -15,7 +15,10 @@ module('Integration | Component | angle-bracket-invocation', function(hooks) {
 
   module('static component support', function() {
     test('does not affect helper usage', async function(assert) {
-      this.owner.register('helper:my-helper', buildHelper(() => 'my-helper'));
+      this.owner.register(
+        'helper:my-helper',
+        buildHelper(() => 'my-helper')
+      );
 
       await render(hbs`{{my-helper}}`);
 
