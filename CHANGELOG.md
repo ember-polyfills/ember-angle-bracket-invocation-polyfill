@@ -1,3 +1,17 @@
+## v2.1.0 (2020-06-05)
+
+#### :rocket: Enhancement
+* [#91](https://github.com/ember-polyfills/ember-angle-bracket-invocation-polyfill/pull/91) Ensure polyfill works for Engines ([@pgengler](https://github.com/pgengler))
+
+#### :memo: Documentation
+* [#90](https://github.com/ember-polyfills/ember-angle-bracket-invocation-polyfill/pull/90) Update README with a section on usage within addons ([@Techn1x](https://github.com/Techn1x))
+
+#### Committers: 4
+- Brad Overton ([@Techn1x](https://github.com/Techn1x))
+- David Tang ([@skaterdav85](https://github.com/skaterdav85))
+- Phil Gengler ([@pgengler](https://github.com/pgengler))
+- Robert Jackson ([@rwjblue](https://github.com/rwjblue))
+
 ## v2.0.2 (2019-08-06)
 
 #### :bug: Bug Fix
