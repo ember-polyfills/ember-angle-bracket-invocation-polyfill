@@ -40,8 +40,8 @@ module('Integration | Component | input', function(hooks) {
 
   test('it passes supported properties and attributes', async function(assert) {
     await render(
-      hbs`<Input 
-        @value="foo" 
+      hbs`<Input
+        @value="foo"
         @size="20"
         name="username"
         placeholder="Enter username"
@@ -67,9 +67,11 @@ module('Integration | Component | input', function(hooks) {
   });
 
   test('it ignores unknown attributes', async function(assert) {
-    await render(hbs`<Input aria-labelledby="foo" data-test-foo />`);
+    await render(hbs`<Input aria-labelledby="foo" data-test-foo data-foo-bar="stuff" />`);
 
     assert.dom('input').exists();
+    assert.dom('a').hasAttribute('data-test-foo');
+    assert.dom('a').hasAttribute('data-foo-bar', 'stuff');
   });
 
   test('it passes <input> untouched', async function(assert) {

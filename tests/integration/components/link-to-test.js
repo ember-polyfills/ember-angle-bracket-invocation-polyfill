@@ -143,9 +143,11 @@ module('Integration | Component | link-to', function(hooks) {
     assert.dom('a').exists();
   });
 
-  test('it ignores unknown attributes', async function(assert) {
-    await render(hbs`<LinkTo @route="foo" aria-labelledby="foo" data-test-foo />`);
+  test('it supports unknown attributes', async function(assert) {
+    await render(hbs`<LinkTo @route="foo" aria-labelledby="foo" data-test-foo data-foo-bar="stuff" />`);
 
     assert.dom('a').exists();
+    assert.dom('a').hasAttribute('data-test-foo');
+    assert.dom('a').hasAttribute('data-foo-bar', 'stuff');
   });
 });
