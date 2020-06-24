@@ -344,16 +344,28 @@ module('Integration | Component | angle-bracket-invocation', function(hooks) {
       assert.dom('[data-test-foo]').hasText('hi martin!');
     });
 
-    test('passing into angle invocation - with additional attributes', async function(assert) {
+    test('passing into angle invocation - with additional attributes before', async function(assert) {
       this.owner.register(
         'template:components/comp-outer',
-        hbs`<CompInner data-one="from outer" data-two="from outer" ...attributes />`
+        hbs`<CompInner data-one="from outer" data-two="from outer" data-three="from outer" ...attributes />`
       );
       this.owner.register('template:components/comp-inner', hbs`hi martin!`);
 
-      await render(hbs`<CompOuter data-one="from render" />`);
+      await render(hbs`<CompOuter data-one="from render" data-three="from render" />`);
 
-      assert.dom('[data-one="from render"][data-two="from outer"]').hasText('hi martin!');
+      assert.dom('[data-one="from render"][data-two="from outer"][data-three="from render"]').hasText('hi martin!');
+    });
+
+    test('passing into angle invocation - with additional attributes after', async function(assert) {
+      this.owner.register(
+        'template:components/comp-outer',
+        hbs`<CompInner data-one="from outer" data-two="from outer" ...attributes data-three="from outer"/>`
+      );
+      this.owner.register('template:components/comp-inner', hbs`hi martin!`);
+
+      await render(hbs`<CompOuter data-one="from render" data-three="from render" />`);
+
+      assert.dom('[data-one="from render"][data-two="from outer"][data-three="from outer"]').hasText('hi martin!');
     });
 
     test('passing into angle invocation - unused', async function(assert) {
