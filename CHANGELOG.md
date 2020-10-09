@@ -1,3 +1,12 @@
+## v3.0.0 (2020-10-09)
+
+#### :boom: Breaking Change
+* [#124](https://github.com/ember-polyfills/ember-angle-bracket-invocation-polyfill/pull/124) Drop Node < 10 support; Upgrade ember-cli-babel to v7 ([@nlfurniss](https://github.com/nlfurniss))
+
+#### Committers: 1
+- Nathaniel Furniss ([@nlfurniss](https://github.com/nlfurniss))
+
+
 ## v2.1.0 (2020-06-05)
 
 #### :rocket: Enhancement
