@@ -2,10 +2,6 @@
 /* eslint-disable ember/new-module-imports */
 import { lte, gte } from 'ember-compatibility-helpers';
 
-console.log(`Ember ${Ember.VERSION}`);
-window.didCreateElementDepth = 0;
-window.didCreateElementMaxDepth = 0;
-
 (function() {
   const P = Ember.__loader.require('container').privatize;
   const { Application, Component, Engine, computed, getOwner } = Ember;
@@ -229,11 +225,6 @@ window.didCreateElementMaxDepth = 0;
 
             let ORIGINAL_DID_CREATE_ELEMENT = manager.didCreateElement;
             manager.didCreateElement = function(bucket, element, operations) {
-              window.didCreateElementDepth++;
-              if (window.didCreateElementMaxDepth < window.didCreateElementDepth) {
-                window.didCreateElementMaxDepth = window.didCreateElementDepth;
-                console.log('new didCreateElement max depth:', window.didCreateElementMaxDepth);
-              }
               ORIGINAL_DID_CREATE_ELEMENT.apply(this, arguments);
               let { args } = bucket;
               if (args.has('__ANGLE_ATTRS__')) {
@@ -247,7 +238,6 @@ window.didCreateElementMaxDepth = 0;
                   }
                 }
               }
-              window.didCreateElementDepth--;
             };
           }
 
@@ -383,11 +373,6 @@ window.didCreateElementMaxDepth = 0;
 
               let ORIGINAL_DID_CREATE_ELEMENT = manager.didCreateElement;
               manager.didCreateElement = function(bucket, element, operations) {
-                window.didCreateElementDepth++;
-                if (window.didCreateElementMaxDepth < window.didCreateElementDepth) {
-                  window.didCreateElementMaxDepth = window.didCreateElementDepth;
-                  console.log('new didCreateElement max depth:', window.didCreateElementMaxDepth);
-                }
                 ORIGINAL_DID_CREATE_ELEMENT.apply(this, arguments);
                 let { args } = bucket;
 
@@ -415,7 +400,6 @@ window.didCreateElementMaxDepth = 0;
                     }
                   }
                 }
-                window.didCreateElementDepth--;
               };
             }
 
