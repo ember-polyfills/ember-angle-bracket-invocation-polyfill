@@ -275,8 +275,8 @@ import { lte, gte } from 'ember-compatibility-helpers';
         })
       );
       let Environment = registry.resolve('service:-glimmer-environment');
-      let ORIGINAL_ENVIRONMENT_CREATE = Environment.create;
       if (!Environment.create.__IS_ANGLE_BRACKET_PATCHED__) {
+        let ORIGINAL_ENVIRONMENT_CREATE = Environment.create;
         Environment.create = function() {
           let environment = ORIGINAL_ENVIRONMENT_CREATE.apply(this, arguments);
           let installedCustomDidCreateElement = false;
@@ -371,36 +371,39 @@ import { lte, gte } from 'ember-compatibility-helpers';
 
               let { manager } = definition;
 
-              let ORIGINAL_DID_CREATE_ELEMENT = manager.didCreateElement;
-              manager.didCreateElement = function(bucket, element, operations) {
-                ORIGINAL_DID_CREATE_ELEMENT.apply(this, arguments);
-                let { args } = bucket;
+              if (!manager.didCreateElement.__IS_ANGLE_BRACKET_PATCHED__) {
+                let ORIGINAL_DID_CREATE_ELEMENT = manager.didCreateElement;
+                manager.didCreateElement = function(bucket, element, operations) {
+                  ORIGINAL_DID_CREATE_ELEMENT.apply(this, arguments);
+                  let { args } = bucket;
 
-                if (lte('2.15.0-beta.1')) {
-                  args = args.namedArgs;
-                }
+                  if (lte('2.15.0-beta.1')) {
+                    args = args.namedArgs;
+                  }
 
-                // on < 2.15 `namedArgs` is only present when there were arguments
-                if (args && args.has('__ANGLE_ATTRS__')) {
-                  let attributeReferences = args.get('__ANGLE_ATTRS__');
-                  let snapshot = attributeReferences.value();
-                  if (snapshot) {
-                    let names = Object.keys(snapshot);
-                    for (let i = 0; i < names.length; i++) {
-                      let attributeName = names[i];
-                      let attributeReference = attributeReferences.get(attributeName);
+                  // on < 2.15 `namedArgs` is only present when there were arguments
+                  if (args && args.has('__ANGLE_ATTRS__')) {
+                    let attributeReferences = args.get('__ANGLE_ATTRS__');
+                    let snapshot = attributeReferences.value();
+                    if (snapshot) {
+                      let names = Object.keys(snapshot);
+                      for (let i = 0; i < names.length; i++) {
+                        let attributeName = names[i];
+                        let attributeReference = attributeReferences.get(attributeName);
 
-                      operations.addDynamicAttribute(
-                        element,
-                        attributeName,
-                        attributeReference,
-                        false,
-                        null
-                      );
+                        operations.addDynamicAttribute(
+                          element,
+                          attributeName,
+                          attributeReference,
+                          false,
+                          null
+                        );
+                      }
                     }
                   }
-                }
-              };
+                };
+                manager.didCreateElement.__IS_ANGLE_BRACKET_PATCHED__ = true;
+              }
             }
 
             return definition;
