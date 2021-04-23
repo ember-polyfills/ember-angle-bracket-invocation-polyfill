@@ -1,3 +1,12 @@
+## v3.0.1 (2021-04-23)
+
+#### :bug: Bug Fix
+* [#125](https://github.com/ember-polyfills/ember-angle-bracket-invocation-polyfill/pull/125) Fix monkey patching in Ember 2.x polyfill code paths ([@mmun](https://github.com/mmun))
+
+#### Committers: 1
+- Martin Muñoz ([@mmun](https://github.com/mmun))
+
+
 ## v3.0.0 (2020-10-09)
 
 #### :boom: Breaking Change
