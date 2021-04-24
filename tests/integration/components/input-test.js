@@ -1,7 +1,10 @@
 import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
-import { render } from '@ember/test-helpers';
+import { render, settled } from '@ember/test-helpers';
 import hbs from 'htmlbars-inline-precompile';
+import hasEmberVersion from 'ember-test-helpers/has-ember-version';
+
+const isUsingAngleBracketPolyfill = !hasEmberVersion(3, 4);
 
 module('Integration | Component | input', function(hooks) {
   setupRenderingTest(hooks);
@@ -40,8 +43,8 @@ module('Integration | Component | input', function(hooks) {
 
   test('it passes supported properties and attributes', async function(assert) {
     await render(
-      hbs`<Input 
-        @value="foo" 
+      hbs`<Input
+        @value="foo"
         @size="20"
         name="username"
         placeholder="Enter username"
@@ -66,10 +69,12 @@ module('Integration | Component | input', function(hooks) {
     assert.dom('input').exists();
   });
 
-  test('it ignores unknown attributes', async function(assert) {
-    await render(hbs`<Input aria-labelledby="foo" data-test-foo />`);
+  test('it supports unknown attributes', async function(assert) {
+    await render(hbs`<Input aria-labelledby="foo" data-test-foo data-foo-bar="stuff" />`);
 
     assert.dom('input').exists();
+    assert.dom('input').hasAttribute('data-test-foo');
+    assert.dom('input').hasAttribute('data-foo-bar', 'stuff');
   });
 
   test('it passes <input> untouched', async function(assert) {
@@ -77,5 +82,84 @@ module('Integration | Component | input', function(hooks) {
 
     assert.dom('input').exists();
     assert.dom('input').doesNotHaveClass('ember-view');
+  });
+
+  module('...attributes', function() {
+    test('no additional attributes', async function(assert) {
+      this.owner.register('template:components/foo-bar', hbs`<Input ...attributes />`);
+
+      await render(hbs`<FooBar data-test-foo />`);
+
+      assert.dom('input').hasAttribute('data-test-foo');
+    });
+
+    test('with additional attributes', async function(assert) {
+      this.owner.register('template:components/foo-bar', hbs`<Input data-one="from inner" data-two="from inner" ...attributes />`);
+
+      await render(hbs`<FooBar data-one="from outer" />`);
+
+      assert.dom('input').hasAttribute('data-one', 'from outer');
+      assert.dom('input').hasAttribute('data-two', 'from inner');
+    });
+
+    test('unused', async function(assert) {
+      this.owner.register('template:components/foo-bar', hbs`<Input ...attributes />`);
+
+      await render(hbs`<FooBar />`);
+
+      assert.dom('input').exists();
+    });
+
+    test('merge class names', async function(assert) {
+      this.owner.register('template:components/foo-bar', hbs`<Input class={{@inside}} ...attributes />`);
+
+      this.outside = 'new';
+      this.inside = 'original';
+      await render(hbs`<FooBar @inside={{this.inside}} class={{this.outside}} />`);
+
+      assert.dom('input').hasClass('original');
+      assert.dom('input').hasClass('new');
+
+      this.set('outside', undefined);
+      await settled();
+      assert.dom('input').hasClass('original');
+      assert.dom('input').doesNotHaveClass('new');
+
+      this.set('outside', 'OUT');
+      this.set('inside', undefined);
+      await settled();
+      assert.dom('input').hasClass('OUT');
+      assert.dom('input').doesNotHaveClass('new');
+      assert.dom('input').doesNotHaveClass('original');
+
+      this.set('inside', 'IN');
+      await settled();
+      assert.dom('input').hasClass('OUT');
+      assert.dom('input').hasClass('IN');
+    });
+
+    test('unused with attributes present', async function(assert) {
+      this.owner.register('template:components/foo-bar', hbs`<Input data-one="from inner" ...attributes />`);
+
+      await render(hbs`<FooBar />`);
+
+      assert.dom('input').hasAttribute('data-one', 'from inner');
+    });
+
+    // This was broken in Ember until 3.10+, see
+    // https://github.com/emberjs/ember.js/pull/17533. So we only test in
+    // versions where these tests have a chance to pass...
+    if (isUsingAngleBracketPolyfill || hasEmberVersion(3, 9)) {
+      test('merges attributes in correct priority', async function(assert) {
+        this.owner.register(
+          'template:components/foo-bar',
+          hbs`<Input data-left="left inner" ...attributes data-right="right inner"/>`
+        );
+        await render(hbs`<FooBar data-left="left outer" data-right="right outer" />`);
+
+        assert.dom('input').hasAttribute('data-left', 'left outer');
+        assert.dom('input').hasAttribute('data-right', 'right inner');
+      });
+    }
   });
 });

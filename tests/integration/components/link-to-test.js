@@ -1,9 +1,12 @@
 import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
-import { render } from '@ember/test-helpers';
+import { render, settled } from '@ember/test-helpers';
 import hbs from 'htmlbars-inline-precompile';
 import EmberRouter from '@ember/routing/router';
 import EmberObject from '@ember/object';
+import hasEmberVersion from 'ember-test-helpers/has-ember-version';
+
+const isUsingAngleBracketPolyfill = !hasEmberVersion(3, 4);
 
 module('Integration | Component | link-to', function(hooks) {
   const Router = EmberRouter.extend();
@@ -130,6 +133,7 @@ module('Integration | Component | link-to', function(hooks) {
     assert.dom('a').hasClass('main');
     assert.dom('a').hasAttribute('id', 'test');
     assert.dom('a').hasAttribute('role', 'nav');
+    assert.dom('a').doesNotHaveAttribute('ariaRole', 'nav'); // Ensure the internal mapping from role->ariaRole results in the correct attribute
     assert.dom('a').hasAttribute('rel', 'noopener');
     assert.dom('a').hasAttribute('tabindex', '1');
     assert.dom('a').hasAttribute('title', 'something');
@@ -143,9 +147,91 @@ module('Integration | Component | link-to', function(hooks) {
     assert.dom('a').exists();
   });
 
-  test('it ignores unknown attributes', async function(assert) {
-    await render(hbs`<LinkTo @route="foo" aria-labelledby="foo" data-test-foo />`);
+  test('it supports unknown attributes', async function(assert) {
+    await render(hbs`<LinkTo @route="foo" aria-labelledby="foo" data-test-foo data-foo-bar="stuff" />`);
 
     assert.dom('a').exists();
+    assert.dom('a').hasAttribute('data-test-foo');
+    assert.dom('a').hasAttribute('data-foo-bar', 'stuff');
+  });
+
+  module('...attributes', function() {
+    test('no additional attributes', async function(assert) {
+      this.owner.register('template:components/foo-bar', hbs`<LinkTo @route="foo" ...attributes />`);
+
+      await render(hbs`<FooBar data-test-foo />`);
+
+      assert.dom('a').hasAttribute('data-test-foo');
+    });
+
+    test('with additional attributes', async function(assert) {
+      this.owner.register('template:components/foo-bar', hbs`<LinkTo @route="foo" data-one="from inner" data-two="from inner" ...attributes />`);
+
+      await render(hbs`<FooBar data-one="from outer" />`);
+
+      assert.dom('a').hasAttribute('data-one', 'from outer');
+      assert.dom('a').hasAttribute('data-two', 'from inner');
+    });
+
+    test('unused', async function(assert) {
+      this.owner.register('template:components/foo-bar', hbs`<LinkTo @route="foo" ...attributes />`);
+
+      await render(hbs`<FooBar />`);
+
+      assert.dom('a').exists();
+      assert.dom('a').hasAttribute('href', '#/foo');
+    });
+
+    test('merge class names', async function(assert) {
+      this.owner.register('template:components/foo-bar', hbs`<LinkTo @route="foo" class={{@inside}} ...attributes />`);
+
+      this.outside = 'new';
+      this.inside = 'original';
+      await render(hbs`<FooBar @inside={{this.inside}} class={{this.outside}} />`);
+
+      assert.dom('a').hasClass('original');
+      assert.dom('a').hasClass('new');
+
+      this.set('outside', undefined);
+      await settled();
+      assert.dom('a').hasClass('original');
+      assert.dom('a').doesNotHaveClass('new');
+
+      this.set('outside', 'OUT');
+      this.set('inside', undefined);
+      await settled();
+      assert.dom('a').hasClass('OUT');
+      assert.dom('a').doesNotHaveClass('new');
+      assert.dom('a').doesNotHaveClass('original');
+
+      this.set('inside', 'IN');
+      await settled();
+      assert.dom('a').hasClass('OUT');
+      assert.dom('a').hasClass('IN');
+    });
+
+    test('unused with attributes present', async function(assert) {
+      this.owner.register('template:components/foo-bar', hbs`<LinkTo @route="foo" data-one="from inner" ...attributes />`);
+
+      await render(hbs`<FooBar />`);
+
+      assert.dom('a').hasAttribute('data-one', 'from inner');
+    });
+
+    // This was broken in Ember until 3.10+, see
+    // https://github.com/emberjs/ember.js/pull/17533. So we only test in
+    // versions where these tests have a chance to pass...
+    if (isUsingAngleBracketPolyfill || hasEmberVersion(3, 9)) {
+      test('merges attributes in correct priority', async function(assert) {
+        this.owner.register(
+          'template:components/foo-bar',
+          hbs`<LinkTo @route="foo" data-left="left inner" ...attributes data-right="right inner"/>`
+        );
+        await render(hbs`<FooBar data-left="left outer" data-right="right outer" />`);
+
+        assert.dom('a').hasAttribute('data-left', 'left outer');
+        assert.dom('a').hasAttribute('data-right', 'right inner');
+      });
+    }
   });
 });
