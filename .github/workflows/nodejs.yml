@@ -1,6 +1,6 @@
 name: CI
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   test:
@@ -27,6 +27,7 @@ jobs:
 
   try-scenarios:
     name: ${{ matrix.ember-try-scenario }}
+    continue-on-error: ${{ matrix.allow-failure }}
 
     runs-on: ubuntu-latest
 
@@ -43,9 +44,15 @@ jobs:
          - ember-3.2
          - ember-3.3
          - ember-lts-3.4
-         - ember-lts-3.8
-         - ember-lts-3.28
          - ember-default
+
+        allow-failure: [false]
+
+        include:
+          - ember-try-scenario: ember-lts-3.8
+            allow-failure: true
+          - ember-try-scenario: ember-lts-3.28
+            allow-failure: true
 
     steps:
     - uses: actions/checkout@v1
