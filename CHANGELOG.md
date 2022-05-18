@@ -1,3 +1,14 @@
+## v3.0.2 (2022-05-18)
+
+#### :bug: Bug Fix
+* [#128](https://github.com/ember-polyfills/ember-angle-bracket-invocation-polyfill/pull/128) Get CI passing ([@mmun](https://github.com/mmun))
+* [#126](https://github.com/ember-polyfills/ember-angle-bracket-invocation-polyfill/pull/126) Fix handling of attributes in Ember 3.4 ([@twokul](https://github.com/twokul))
+
+#### Committers: 1
+- Martin Muñoz ([@mmun](https://github.com/mmun))
+- Alex Navasardyan ([@twokul](https://github.com/twokul))
+
+
 ## v3.0.1 (2021-04-23)
 
 #### :bug: Bug Fix
