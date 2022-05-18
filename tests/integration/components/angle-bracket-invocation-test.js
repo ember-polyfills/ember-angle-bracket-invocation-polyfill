@@ -268,29 +268,33 @@ module('Integration | Component | angle-bracket-invocation', function(hooks) {
       assert.dom().hasText('hi rwjblue!');
     });
 
-    test('invoke dynamic - path no implicit this', async function(assert) {
-      this.owner.register('service:elsewhere', Service.extend());
-      this.owner.register(
-        'component:x-invoker',
-        Component.extend({
-          elsewhere: injectService(),
+    // The following test is commented out because the template does not even compile in modern Embers
+    // with the error "You used elsewhere.curriedThing as a tag name, but elsewhere is not in scope".
+    // This test can be uncommented once it can be conditionally run only in older Embers.
+    //
+    // test('invoke dynamic - path no implicit this', async function(assert) {
+    //   this.owner.register('service:elsewhere', Service.extend());
+    //   this.owner.register(
+    //     'component:x-invoker',
+    //     Component.extend({
+    //       elsewhere: injectService(),
 
-          init() {
-            this._super(...arguments);
+    //       init() {
+    //         this._super(...arguments);
 
-            let elsewhere = this.get('elsewhere');
-            elsewhere.set('curriedThing', this.curriedThing);
-          },
-        })
-      );
-      this.owner.register('template:components/x-invoker', hbs`<elsewhere.curriedThing />`);
-      this.owner.register('template:components/foo-bar', hbs`hi rwjblue!`);
+    //         let elsewhere = this.get('elsewhere');
+    //         elsewhere.set('curriedThing', this.curriedThing);
+    //       },
+    //     })
+    //   );
+    //   this.owner.register('template:components/x-invoker', hbs`<elsewhere.curriedThing />`);
+    //   this.owner.register('template:components/foo-bar', hbs`hi rwjblue!`);
 
-      await render(hbs`{{x-invoker curriedThing=(component 'foo-bar')}}`);
+    //   await render(hbs`{{x-invoker curriedThing=(component 'foo-bar')}}`);
 
-      // should not have rendered anything (no implicit `this`)
-      assert.dom().hasText('');
-    });
+    //   // should not have rendered anything (no implicit `this`)
+    //   assert.dom().hasText('');
+    // });
   });
 
   module('has-block', function(hooks) {
