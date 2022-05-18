@@ -15,7 +15,7 @@ jobs:
     - uses: actions/checkout@v1
     - uses: actions/setup-node@v1
       with:
-        node-version: 8.x
+        node-version: 10.x
     - name: install yarn
       run: npm install -g yarn
     - name: install dependencies
@@ -44,16 +44,14 @@ jobs:
          - ember-3.3
          - ember-lts-3.4
          - ember-lts-3.8
-         - ember-release
-         - ember-beta
-         - ember-canary
+         - ember-lts-3.28
          - ember-default
 
     steps:
     - uses: actions/checkout@v1
     - uses: actions/setup-node@v1
       with:
-        node-version: 12.x
+        node-version: 10.x
     - name: install yarn
       run: npm install -g yarn
     - name: install dependencies
