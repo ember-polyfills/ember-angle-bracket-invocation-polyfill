@@ -11,7 +11,7 @@ module.exports = {
     let checker = new VersionChecker(this.project);
     let emberVersion = checker.forEmber();
 
-    this.shouldPolyfill = emberVersion.lt('3.4.0-alpha.1');
+    this.shouldPolyfill = emberVersion.lt('3.5.0-alpha.1');
     this.shouldPolyfillNested = emberVersion.lt('3.10.0-alpha.1');
     this.shouldPolyfillBuiltinComponents = emberVersion.lt('3.10.0-alpha.1');
 
