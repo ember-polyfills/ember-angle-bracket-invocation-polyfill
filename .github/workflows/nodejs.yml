@@ -44,9 +44,7 @@ jobs:
          - ember-3.3
          - ember-lts-3.4
          - ember-lts-3.8
-         - ember-release
-         - ember-beta
-         - ember-canary
+         - ember-lts-3.28
          - ember-default
 
     steps:
