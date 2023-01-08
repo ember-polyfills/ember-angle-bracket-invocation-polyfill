@@ -121,6 +121,31 @@ module('Integration | Component | angle-bracket-invocation', function(hooks) {
       assert.dom('[data-foo="bar"]').exists();
     });
 
+    test('with attributes - has attributeBindings', async function(assert) {
+      this.owner.register(
+        'component:foo-bar',
+        Component.extend({ attributeBindings: ['data-foo'] })
+      );
+      this.owner.register('template:components/foo-bar', hbs``);
+
+      await render(hbs`<FooBar data-foo="bar" />`);
+
+      assert.dom('[data-foo="bar"]').exists();
+    });
+
+    test('with attributes - merged attributeBindings', async function(assert) {
+      this.owner.register(
+        'component:foo-bar',
+        Component.extend({ tagName: 'span', attributeBindings: ['data-foo', 'data-bar'] })
+      );
+      this.owner.register('template:components/foo-bar', hbs``);
+
+      await render(hbs`<FooBar @data-bar="foo" data-foo="bar" />`);
+
+      assert.dom('span').hasAttribute('data-foo', 'bar');
+      assert.dom('span').hasAttribute('data-bar', 'foo');
+    });
+
     test('attributes, arguments, and block', async function(assert) {
       this.owner.register('template:components/foo-bar', hbs`<h2>{{title}}</h2><p>{{yield}}</p>`);
 
@@ -360,6 +385,43 @@ module('Integration | Component | angle-bracket-invocation', function(hooks) {
       await render(hbs`<CompOuter />`);
 
       assert.dom('div div').hasText('hi martin!');
+    });
+
+    test('passing into angle invocation - with existing attributeBindings', async function(assert) {
+      this.owner.register(
+        'template:components/comp-outer',
+        hbs`<CompInner data-one="from outer" @data-two="from outer" ...attributes />`
+      );
+      this.owner.register(
+        'component:comp-inner',
+        Component.extend({ tagName: 'span', attributeBindings: ['data-two'] })
+      );
+      this.owner.register('template:components/comp-inner', hbs`hi martin!`);
+
+      await render(hbs`<CompOuter data-one="from render" data-two="from render" />`);
+
+      assert.dom('span').hasText('hi martin!');
+      assert.dom('span').hasAttribute('data-one', 'from render');
+      assert.dom('span').hasAttribute('data-two', 'from render');
+    });
+
+    test('passing into angle invocation - with merged attributeBindings', async function(assert) {
+      this.owner.register(
+        'template:components/comp-outer',
+        hbs`<CompInner data-one="from outer" @data-two="from outer" @data-three="from outer" ...attributes />`
+      );
+      this.owner.register(
+        'component:comp-inner',
+        Component.extend({ tagName: 'span', attributeBindings: ['data-two', 'data-three'] })
+      );
+      this.owner.register('template:components/comp-inner', hbs`hi martin!`);
+
+      await render(hbs`<CompOuter data-one="from render" data-two="from render" />`);
+
+      assert.dom('span').hasText('hi martin!');
+      assert.dom('span').hasAttribute('data-one', 'from render');
+      assert.dom('span').hasAttribute('data-two', 'from render');
+      assert.dom('span').hasAttribute('data-three', 'from outer');
     });
 
     test('passing into element - normal component', async function(assert) {
