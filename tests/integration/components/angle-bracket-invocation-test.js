@@ -121,6 +121,14 @@ module('Integration | Component | angle-bracket-invocation', function(hooks) {
       assert.dom('[data-foo="bar"]').exists();
     });
 
+    test('with style', async function(assert) {
+      this.owner.register('template:components/foo-bar', hbs``);
+
+      await render(hbs`<FooBar style="color: red" data-foo="bar" />`);
+
+      assert.dom('[data-foo="bar"]').hasAttribute('style');
+    });
+
     test('attributes, arguments, and block', async function(assert) {
       this.owner.register('template:components/foo-bar', hbs`<h2>{{title}}</h2><p>{{yield}}</p>`);
 
